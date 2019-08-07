@@ -11,3 +11,12 @@ SDL_Rect rectf_to_rect(const rectf *rect) {
 
   return rec;
 }
+
+vec2f rectf_center(const rectf *rect) {
+  vec2f cen;
+
+  cen.x = rect->x + rect->w / 2.f;
+  cen.y = rect->y + rect->h / 2.f;
+
+  return cen;
+}

@@ -20,3 +20,19 @@ vec2f vec2f_normalize(const vec2f *rect) {
 
   return unit;
 }
+
+void vec2f_clamp(vec2f *vec, float val) {
+  if (vec->x > val) {
+    vec->x = val;
+  } else if (vec->x < -val) {
+    vec->x = -val;
+  }
+
+  if (vec->y > val) {
+    vec->y = val;
+  } else if (vec->y < -val) {
+    vec->y = -val;
+  }
+
+  return;
+}

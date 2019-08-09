@@ -36,12 +36,37 @@ void game_context_free(game_context *ctx) {
   SDL_DestroyWindow(ctx->window);
 }
 
-void game_update(game_state *state) {
+void keep_in_bounds(rectf *entity, const SDL_Rect *viewport) {
+  if (entity->x + entity->w < 0) {
+    entity->x += viewport->w;
+  }
+  if (entity->x > viewport->w) {
+    entity->x -= viewport->w;
+  }
+  if (entity->y + entity->h < 0) {
+    entity->y += viewport->h;
+  }
+  if (entity->y > viewport->h) {
+    entity->y -= viewport->h;
+  }
+}
+
+void update_entity_positions(game_context *ctx) {
+  SDL_Rect viewport;
+
+  SDL_RenderGetViewport(ctx->renderer, &viewport);
+  
+  keep_in_bounds(&ctx->state->player->sprite, &viewport);
+}
+
+void game_update(game_context *ctx) {
   game_input input;
 
-  input = game_input_state(state->bindings);
+  input = game_input_state(ctx->state->bindings);
 
-  player_update(state->player, &input);
+  player_update(ctx->state->player, &input);
+
+  update_entity_positions(ctx);
 }
 
 void game_draw(game_context *ctx) {
@@ -103,7 +128,7 @@ void game_start(game_context *ctx) {
       }
     }
 
-    game_update(ctx->state);
+    game_update(ctx);
     game_draw(ctx);
   }
 }

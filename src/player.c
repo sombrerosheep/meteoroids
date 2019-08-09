@@ -3,12 +3,14 @@
 
 #define PLAYER_SPRITE_SIZE 15.f
 
-#define PLAYER_ROT_SPEED 1.f
+#define PLAYER_ROT_SPEED 3.f
 #define PLAYER_THRUST_BASE_SPEED 0.25f
 #define PLAYER_THRUST_MAX_SPEED 2.f
 
-#define PLAYER_CROSSHAIR_OFFSET 10.f
+#define PLAYER_CROSSHAIR_OFFSET 15.f
 #define BULLET_SPEED 10.f
+
+#define DEG_TO_RAD 0.01745329251994329576924f
 
 static SDL_Color player_color = { 0x0, 0xF0, 0x0, 0xFF };
 
@@ -16,8 +18,8 @@ void player_rotate(Player *p) {
   float cross_x, cross_y;
   vec2f player_center;
 
-  cross_x = SDL_cosf(p->rotation);
-  cross_y = SDL_sinf(p->rotation);
+  cross_x = SDL_cosf(p->rotation * DEG_TO_RAD);
+  cross_y = SDL_sinf(p->rotation * DEG_TO_RAD);
 
   cross_x *= PLAYER_CROSSHAIR_OFFSET;
   cross_y *= PLAYER_CROSSHAIR_OFFSET;
@@ -27,10 +29,8 @@ void player_rotate(Player *p) {
   cross_x += player_center.x;
   cross_y += player_center.y;
 
-  p->crosshair.x = cross_x + p->crosshair.w / 2;
-  p->crosshair.y = cross_y + p->crosshair.h / 2;
-
-  printf("rot: %f\n", p->rotation);
+  p->crosshair.x = cross_x - p->crosshair.w / 2;
+  p->crosshair.y = cross_y - p->crosshair.h / 2;
 }
 
 void player_shoot(Player *p) {
@@ -96,8 +96,8 @@ void player_draw(const Player *p) {
   cross_cen = rectf_center(&p->crosshair);
 
   render_draw_line(&player_cen, &cross_cen, &player_color);
-  render_draw_rectf(&p->sprite, &player_color);
-  render_draw_rectf(&p->crosshair, &player_color);
+  render_fill_rectf(&p->sprite, &player_color);
+  render_fill_rectf(&p->crosshair, &player_color);
 }
 
 void player_init(Player *p, float x, float y) {

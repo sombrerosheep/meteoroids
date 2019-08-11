@@ -3,15 +3,16 @@
 
 #include <rectf.h>
 #include <vec2f.h>
+#include <game_clock.h>
 
 typedef struct bullet {
   rectf sprite;
   vec2f velocity;
-  int health;
+  float health;
 } bullet;
 
 void bullet_init(bullet *b, float x, float y, float v_x, float v_y);
-void bullet_update(bullet *b);
+void bullet_update(bullet *b, const game_frame *delta);
 void bullet_draw(bullet *b);
 
 #endif

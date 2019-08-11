@@ -46,21 +46,6 @@ void game_context_free(game_context *ctx) {
   SDL_DestroyWindow(ctx->window);
 }
 
-void keep_in_bounds(rectf *entity, const SDL_Rect *viewport) {
-  if (entity->x + entity->w < 0) {
-    entity->x += viewport->w;
-  }
-  if (entity->x > viewport->w) {
-    entity->x -= viewport->w;
-  }
-  if (entity->y + entity->h < 0) {
-    entity->y += viewport->h;
-  }
-  if (entity->y > viewport->h) {
-    entity->y -= viewport->h;
-  }
-}
-
 void update_entity_positions(game_context *ctx) {
   SDL_Rect viewport;
   dllist_element *e;
@@ -124,11 +109,13 @@ void build_game_world(game_state *state, SDL_Renderer *renderer) {
 }
 
 void game_update(game_context *ctx, game_frame *delta) {
+  SDL_Rect viewport;
   game_input input;
 
+  SDL_RenderGetViewport(ctx->renderer, &viewport);
   input = game_input_state(ctx->state->bindings);
 
-  player_update(ctx->state->player, &input, delta);
+  player_update(ctx->state->player, &input, &viewport, delta);
   update_meteoroids(ctx->state->meteoroids, delta);
 
   update_entity_positions(ctx);

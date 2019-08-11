@@ -20,3 +20,26 @@ vec2f rectf_center(const rectf *rect) {
 
   return cen;
 }
+
+SDL_bool keep_in_bounds(rectf *entity, const SDL_Rect *viewport) {
+  SDL_bool adjusted = SDL_FALSE;
+
+  if (entity->x + entity->w < 0) {
+    entity->x += viewport->w;
+    adjusted = SDL_TRUE;
+  }
+  if (entity->x > viewport->w) {
+    entity->x -= viewport->w;
+    adjusted = SDL_TRUE;
+  }
+  if (entity->y + entity->h < 0) {
+    entity->y += viewport->h;
+    adjusted = SDL_TRUE;
+  }
+  if (entity->y > viewport->h) {
+    entity->y -= viewport->h;
+    adjusted = SDL_TRUE;
+  }
+
+  return adjusted;
+}

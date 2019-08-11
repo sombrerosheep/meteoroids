@@ -9,7 +9,6 @@
 #define PLAYER_THRUST_MAX_SPEED 2.f
 
 #define PLAYER_CROSSHAIR_OFFSET 15.f
-#define BULLET_SPEED 10.f
 
 #define PLAYER_SHOOT_COOLDOWN_MS 900
 
@@ -62,22 +61,28 @@ void player_shoot(Player *p) {
   
   dllist_ins(&p->bullets, b);
   p->can_shoot = SDL_FALSE;
+  p->shoot_cooldown = 0;
 
   return;
 }
 
-void update_bullets(Player *p) {
+void update_bullets(Player *p, const SDL_Rect *viewport, const game_frame *delta) {
   dllist_element *e;
+  bullet *b;
 
-  for (e = p->bullets.head; e != NULL; e = e->next) {
-    bullet_update((bullet*)e->data);
+  for (e = p->bullets.head; e != NULL;) {
+    b = (bullet*)e->data;
+    bullet_update(b, delta);
+    keep_in_bounds(&b->sprite, viewport);
 
     // clean up "dead" bullets
-    if (((bullet*)e->data)->health < 0) {
+    if (((bullet*)e->data)->health < 0.f) {
       dllist_element *prev = e->prev; // needed to correct iterator
-      dllist_rem(&p->bullets, (void**)&e);
-      destroy_bullet(e);
+      int res = dllist_rem(&p->bullets, (void**)&b);
+      destroy_bullet(b);
       e = prev; // correct iterator
+    } else {
+      e = e->next;
     }
   }
 }
@@ -98,13 +103,12 @@ void player_move(Player *p) {
   p->crosshair.y += p->velocity.y;
 }
 
-void player_update(Player *p, const game_input *input, const game_frame *delta) {
+void player_update(Player *p, const game_input *input, const SDL_Rect *viewport, const game_frame *delta) {
   vec2f movement;
 
   p->shoot_cooldown += delta->mil;
   if (p->shoot_cooldown > PLAYER_SHOOT_COOLDOWN_MS) {
     p->can_shoot = SDL_TRUE;
-    p->shoot_cooldown = 0;
   }
 
   if (input->left == SDL_TRUE) {
@@ -138,7 +142,7 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
     player_shoot(p);
   }
 
-  update_bullets(p);
+  update_bullets(p, viewport, delta);
   vec2f_clamp(&p->velocity, PLAYER_THRUST_MAX_SPEED);
   player_rotate(p);
   player_move(p);

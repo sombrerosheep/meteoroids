@@ -7,13 +7,14 @@
 #include <dllist.h>
 #include <game_clock.h>
 
-
 typedef struct Player {
   vec2f velocity;
   rectf crosshair;
   rectf sprite;
   dllist bullets;
   float rotation;
+  SDL_bool can_shoot;
+  unsigned int shoot_cooldown;
 } Player;
 
 void player_init(Player *p, float x, float y);

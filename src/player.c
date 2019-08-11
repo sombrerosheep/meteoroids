@@ -11,6 +11,8 @@
 #define PLAYER_CROSSHAIR_OFFSET 15.f
 #define BULLET_SPEED 10.f
 
+#define PLAYER_SHOOT_COOLDOWN_MS 900
+
 #define DEG_TO_RAD 0.01745329251994329576924f
 
 static SDL_Color player_color = { 0x0, 0xF0, 0x0, 0xFF };
@@ -59,6 +61,8 @@ void player_shoot(Player *p) {
   bullet_init(b, x, y, v_x, v_y);
   
   dllist_ins(&p->bullets, b);
+  p->can_shoot = SDL_FALSE;
+
   return;
 }
 
@@ -97,6 +101,12 @@ void player_move(Player *p) {
 void player_update(Player *p, const game_input *input, const game_frame *delta) {
   vec2f movement;
 
+  p->shoot_cooldown += delta->mil;
+  if (p->shoot_cooldown > PLAYER_SHOOT_COOLDOWN_MS) {
+    p->can_shoot = SDL_TRUE;
+    p->shoot_cooldown = 0;
+  }
+
   if (input->left == SDL_TRUE) {
     p->rotation -= PLAYER_ROT_SPEED * delta->sec;
   }
@@ -124,7 +134,7 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
     p->velocity.y += movement.y * delta->sec;
   }
 
-  if (input->fire == SDL_TRUE) {
+  if (input->fire == SDL_TRUE && p->can_shoot) {
     player_shoot(p);
   }
 
@@ -147,7 +157,10 @@ void player_draw(const Player *p) {
 }
 
 void player_init(Player *p, float x, float y) {
-  p->rotation = 33.f;
+  p->can_shoot = SDL_TRUE;
+  p->shoot_cooldown = 0;
+
+  p->rotation = 270.f;
   
   p->velocity.x = 0.f;
   p->velocity.y = 0.f;

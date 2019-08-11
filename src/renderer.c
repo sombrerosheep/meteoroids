@@ -13,6 +13,10 @@ void renderer_set(SDL_Renderer *sdl_renderer) {
   return;
 }
 
+void renderer_get_viewport(SDL_Rect *viewport) {
+  SDL_RenderGetViewport(renderer, viewport);
+}
+
 void render_fill_rectf(const rectf *rect, const SDL_Color *color) {
   SDL_Rect rec;
 

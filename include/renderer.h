@@ -6,6 +6,7 @@
 #include <vec2f.h>
 
 void renderer_set(SDL_Renderer *renderer);
+void renderer_get_viewport(SDL_Rect *viewport);
 void render_fill_rectf(const rectf *rect, const SDL_Color *color);
 void render_draw_rectf(const rectf *rect, const SDL_Color *color);
 void render_draw_line(const vec2f *start, const vec2f *end, const SDL_Color *color);

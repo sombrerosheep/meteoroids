@@ -50,8 +50,7 @@ void update_entity_positions(game_context *ctx) {
   SDL_Rect viewport;
   dllist_element *e;
 
-  SDL_RenderGetViewport(ctx->renderer, &viewport);
-  
+  renderer_get_viewport(&viewport);
   keep_in_bounds(&ctx->state->player->sprite, &viewport);
   
   for (e = ctx->state->meteoroids->head; e != NULL; e = e->next) {
@@ -83,12 +82,12 @@ void draw_meteoroids(dllist *l) {
   }
 }
 
-void build_game_world(game_state *state, SDL_Renderer *renderer) {
+void build_game_world(game_state *state) {
   float x, y, v_x, v_y;
   SDL_Rect viewport;
   meteoroid *m;
 
-  SDL_RenderGetViewport(renderer, &viewport);
+  renderer_get_viewport(&viewport);
 
   for (int i = 0; i < NUM_STARTING_METEOROIDS; i++) {
     m = SDL_malloc(sizeof(meteoroid));
@@ -109,13 +108,11 @@ void build_game_world(game_state *state, SDL_Renderer *renderer) {
 }
 
 void game_update(game_context *ctx, game_frame *delta) {
-  SDL_Rect viewport;
   game_input input;
 
-  SDL_RenderGetViewport(ctx->renderer, &viewport);
   input = game_input_state(ctx->state->bindings);
 
-  player_update(ctx->state->player, &input, &viewport, delta);
+  player_update(ctx->state->player, &input, delta);
   update_meteoroids(ctx->state->meteoroids, delta);
 
   update_entity_positions(ctx);
@@ -148,6 +145,12 @@ game_context* game_init(game_key_bindings *key_bindings) {
   SDL_REQUIRE_NOT_NULL(window = SDL_CreateWindow("Meteoroids", 200, 125, 800, 600, SDL_WINDOW_OPENGL));
   SDL_REQUIRE_NOT_NULL(renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
 
+  ctx->window = window;
+  ctx->renderer = renderer;
+  ctx->state = state;
+
+  renderer_set(renderer);
+
   player_init(player, 100.f, 100.f);
   state->player = player;
 
@@ -159,13 +162,7 @@ game_context* game_init(game_key_bindings *key_bindings) {
 
   dllist_init(meteoroids, destroy_meteoroid);
   state->meteoroids = meteoroids;
-  build_game_world(state, renderer);
-
-  ctx->window = window;
-  ctx->renderer = renderer;
-  ctx->state = state;
-
-  renderer_set(renderer);
+  build_game_world(state);
 
   return ctx;
 }

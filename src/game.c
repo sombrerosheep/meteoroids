@@ -11,6 +11,9 @@
 #define SDL_REQUIRE_SUCCESS(x)  if ((x) != 0) SDL_PRINT_ERROR
 #define SDL_REQUIRE_NOT_NULL(x) if ((x) == NULL) SDL_PRINT_ERROR
 
+#define NUM_STARTING_METEOROIDS 8
+#define METEOROID_VELOCITY_RANGE 1.2f
+
 typedef struct game_state {
   game_key_bindings *bindings;
   Player *player;
@@ -93,31 +96,29 @@ void draw_meteoroids(dllist *l) {
   }
 }
 
-void build_game_world(game_state *state) {
-  meteoroid *m_first;
-  meteoroid *m_second;
-  meteoroid *m_third;
+void build_game_world(game_state *state, SDL_Renderer *renderer) {
+  float x, y, v_x, v_y;
+  SDL_Rect viewport;
+  meteoroid *m;
 
-  m_first = SDL_malloc(sizeof(meteoroid));
-  m_second = SDL_malloc(sizeof(meteoroid));
-  m_third = SDL_malloc(sizeof(meteoroid));
+  SDL_RenderGetViewport(renderer, &viewport);
 
-  meteoroid_init(m_first, FIRST);
-  meteoroid_init(m_second, SECOND);
-  meteoroid_init(m_third, THIRD);
+  for (int i = 0; i < NUM_STARTING_METEOROIDS; i++) {
+    m = SDL_malloc(sizeof(meteoroid));
+    meteoroid_init(m, FIRST);
 
-  m_first->velocity.x = 1.2f;
-  m_first->velocity.y = 1.0f;
+    x = random_getf_between((float)viewport.x, (float)viewport.w);
+    y = random_getf_between((float)viewport.y, (float)viewport.h);
+    v_x = random_getf_between(-METEOROID_VELOCITY_RANGE, METEOROID_VELOCITY_RANGE);
+    v_y = random_getf_between(-METEOROID_VELOCITY_RANGE, METEOROID_VELOCITY_RANGE);
 
-  m_second->velocity.x = 1.2f;
-  m_second->velocity.y = -1.0f;
+    m->velocity.x = v_x;
+    m->velocity.y = v_y;
+    m->sprite.x = x;
+    m->sprite.y = y;
 
-  m_third->velocity.x = -1.2f;
-  m_third->velocity.y = 1.0f;
-
-  dllist_ins(state->meteoroids, m_first);
-  dllist_ins(state->meteoroids, m_second);
-  dllist_ins(state->meteoroids, m_third);
+    dllist_ins(state->meteoroids, m);
+  }
 }
 
 void game_update(game_context *ctx) {
@@ -169,7 +170,7 @@ game_context* game_init(game_key_bindings *key_bindings) {
 
   dllist_init(meteoroids, destroy_meteoroid);
   state->meteoroids = meteoroids;
-  build_game_world(state);
+  build_game_world(state, renderer);
 
   ctx->window = window;
   ctx->renderer = renderer;

@@ -1,5 +1,7 @@
 #include <vec2f.h>
 
+#include <SDL.h>
+
 float vec2f_magnitude(const vec2f *rect) {
   float x_sq, y_sq, mag;
 
@@ -19,6 +21,15 @@ vec2f vec2f_normalize(const vec2f *rect) {
   unit.y = rect->y / mag;
 
   return unit;
+}
+
+vec2f vec2f_normalizef(float x, float y) {
+  vec2f vec, res;
+
+  vec = (vec2f){ x, y };
+  res = vec2f_normalize(&vec);
+
+  return res;
 }
 
 void vec2f_clamp(vec2f *vec, float val) {

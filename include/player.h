@@ -4,11 +4,13 @@
 #include <rectf.h>
 #include <vec2f.h>
 #include <game_input.h>
+#include <dllist.h>
 
 typedef struct Player {
   vec2f velocity;
   rectf crosshair;
   rectf sprite;
+  dllist bullets;
   float rotation;
 } Player;
 

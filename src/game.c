@@ -18,6 +18,7 @@ typedef struct game_state {
   game_key_bindings *bindings;
   Player *player;
   dllist *meteoroids;
+  
 } game_state;
 
 typedef struct game_context {

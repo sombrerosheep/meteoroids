@@ -1,5 +1,6 @@
 #include <player.h>
 #include <renderer.h>
+#include <bullet.h>
 
 #define PLAYER_SPRITE_SIZE 15.f
 
@@ -13,6 +14,14 @@
 #define DEG_TO_RAD 0.01745329251994329576924f
 
 static SDL_Color player_color = { 0x0, 0xF0, 0x0, 0xFF };
+
+void destroy_bullet(void *data) {
+  bullet *b;
+
+  b = (bullet*)data;
+
+  SDL_free(b);
+}
 
 void player_rotate(Player *p) {
   float cross_x, cross_y;
@@ -34,12 +43,47 @@ void player_rotate(Player *p) {
 }
 
 void player_shoot(Player *p) {
-  int cross_x, cross_y;
-  vec2f bullet_vec;
+  float x, y, v_x, v_y;
+  vec2f bullet_vec, player_center;
+  bullet *b;
 
-  cross_x = SDL_cosf(p->rotation);
-  cross_y = SDL_sinf(p->rotation);
+  b = SDL_malloc(sizeof(bullet));
 
+  v_x = SDL_cosf(p->rotation * DEG_TO_RAD);
+  v_y = SDL_sinf(p->rotation * DEG_TO_RAD);
+  player_center = rectf_center(&p->sprite);
+
+  x = v_x + player_center.x;
+  y = v_y + player_center.y;
+
+  bullet_init(b, x, y, v_x, v_y);
+  
+  dllist_ins(&p->bullets, b);
+  return;
+}
+
+void update_bullets(Player *p) {
+  dllist_element *e;
+
+  for (e = p->bullets.head; e != NULL; e = e->next) {
+    bullet_update((bullet*)e->data);
+
+    // clean up "dead" bullets
+    if (((bullet*)e->data)->health < 0) {
+      dllist_element *prev = e->prev; // needed to correct iterator
+      dllist_rem(&p->bullets, (void**)&e);
+      destroy_bullet(e);
+      e = prev; // correct iterator
+    }
+  }
+}
+
+void draw_bullets(const Player *p) {
+  dllist_element *e;
+
+  for (e = p->bullets.head; e != NULL; e = e->next) {
+    bullet_draw((bullet*)e->data);
+  }
 }
 
 void player_move(Player *p) {
@@ -84,6 +128,7 @@ void player_update(Player *p, const game_input *input) {
     player_shoot(p);
   }
 
+  update_bullets(p);
   vec2f_clamp(&p->velocity, PLAYER_THRUST_MAX_SPEED);
   player_rotate(p);
   player_move(p);
@@ -95,6 +140,7 @@ void player_draw(const Player *p) {
   player_cen = rectf_center(&p->sprite);
   cross_cen = rectf_center(&p->crosshair);
 
+  draw_bullets(p);
   render_draw_line(&player_cen, &cross_cen, &player_color);
   render_fill_rectf(&p->sprite, &player_color);
   render_fill_rectf(&p->crosshair, &player_color);
@@ -116,10 +162,14 @@ void player_init(Player *p, float x, float y) {
   p->crosshair.w = 5.f;
   p->crosshair.h = 5.f;
 
+  dllist_init(&p->bullets, destroy_bullet);
+
   player_rotate(p);
 }
 
 void player_free(Player *p) {
+  dllist_destroy(&p->bullets);
+
   SDL_free(p);
 
   SDL_memset(p, 0, sizeof(Player));

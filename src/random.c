@@ -32,15 +32,10 @@ int random_get_between(int min, int max) {
 }
 
 float random_getf_between(float min, float max) {
-  int i, d;
-  float rem;
-  float num;
+  float scale, num;
 
-  i = random_get_between((int)min, (int)max);
-  d = random_get_between(0, 9999);
-
-  rem = (float)d * 0.0001f;
-  num = (float)i + rem;
+  scale = rand() / (float)RAND_MAX;
+  num = min + scale * ( max - min );
 
   return num;
 }

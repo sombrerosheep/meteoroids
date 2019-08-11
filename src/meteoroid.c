@@ -1,6 +1,8 @@
 #include <meteoroid.h>
 #include <renderer.h>
 
+#define METEOROID_SPEED 50.f
+
 #define FIRST_GEN_SIZE 60.f
 #define SECOND_GEN_SIZE 30.f
 #define THIRD_GEN_SIZE 15.f
@@ -30,9 +32,9 @@ void meteoroid_init(meteoroid *m, enum GENERATION gen) {
   }
 }
 
-void meteoroid_update(meteoroid *m) {
-  m->sprite.x += m->velocity.x;
-  m->sprite.y += m->velocity.y;
+void meteoroid_update(meteoroid *m, game_frame *delta) {
+  m->sprite.x += m->velocity.x * delta->sec * METEOROID_SPEED;
+  m->sprite.y += m->velocity.y * delta->sec * METEOROID_SPEED;
 }
 
 void meteoroid_draw(const meteoroid *m) {

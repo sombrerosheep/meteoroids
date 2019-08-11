@@ -6,6 +6,7 @@
 #include <renderer.h>
 #include <dllist.h>
 #include <meteoroid.h>
+#include <game_clock.h>
 
 #define SDL_PRINT_ERROR printf("Error from SDL %s\n", SDL_GetError());
 #define SDL_REQUIRE_SUCCESS(x)  if ((x) != 0) SDL_PRINT_ERROR
@@ -18,7 +19,7 @@ typedef struct game_state {
   game_key_bindings *bindings;
   Player *player;
   dllist *meteoroids;
-  
+
 } game_state;
 
 typedef struct game_context {
@@ -81,11 +82,11 @@ void destroy_meteoroid(void *data) {
   SDL_free(m);
 }
 
-void update_meteoroids(dllist *l) {
+void update_meteoroids(dllist *l, game_frame *delta) {
   dllist_element *e;
 
   for (e = l->head; e != NULL; e = e->next) {
-    meteoroid_update((meteoroid*)e->data);
+    meteoroid_update((meteoroid*)e->data, delta);
   }
 }
 
@@ -122,13 +123,13 @@ void build_game_world(game_state *state, SDL_Renderer *renderer) {
   }
 }
 
-void game_update(game_context *ctx) {
+void game_update(game_context *ctx, game_frame *delta) {
   game_input input;
 
   input = game_input_state(ctx->state->bindings);
 
-  player_update(ctx->state->player, &input);
-  update_meteoroids(ctx->state->meteoroids);
+  player_update(ctx->state->player, &input, delta);
+  update_meteoroids(ctx->state->meteoroids, delta);
 
   update_entity_positions(ctx);
 }
@@ -185,10 +186,14 @@ game_context* game_init(game_key_bindings *key_bindings) {
 void game_start(game_context *ctx) {
   SDL_Event event;
   SDL_bool running;
+  game_clock clock;
+  game_frame delta;
 
+  game_clock_init(&clock);
   running = SDL_TRUE;
 
   while (running) {
+    delta = game_clock_reset(&clock);
     if (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
         running = SDL_FALSE;
@@ -199,7 +204,7 @@ void game_start(game_context *ctx) {
       }
     }
 
-    game_update(ctx);
+    game_update(ctx, &delta);
     game_draw(ctx);
   }
 }

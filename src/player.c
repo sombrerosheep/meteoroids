@@ -4,8 +4,8 @@
 
 #define PLAYER_SPRITE_SIZE 15.f
 
-#define PLAYER_ROT_SPEED 3.f
-#define PLAYER_THRUST_BASE_SPEED 0.25f
+#define PLAYER_ROT_SPEED 100.f
+#define PLAYER_THRUST_BASE_SPEED 15.f
 #define PLAYER_THRUST_MAX_SPEED 2.f
 
 #define PLAYER_CROSSHAIR_OFFSET 15.f
@@ -94,15 +94,15 @@ void player_move(Player *p) {
   p->crosshair.y += p->velocity.y;
 }
 
-void player_update(Player *p, const game_input *input) {
+void player_update(Player *p, const game_input *input, const game_frame *delta) {
   vec2f movement;
 
   if (input->left == SDL_TRUE) {
-    p->rotation -= PLAYER_ROT_SPEED;
+    p->rotation -= PLAYER_ROT_SPEED * delta->sec;
   }
   
   if (input->right == SDL_TRUE) {
-    p->rotation += PLAYER_ROT_SPEED;
+    p->rotation += PLAYER_ROT_SPEED * delta->sec;
   }
 
   if (p->rotation < 0.f) {
@@ -120,8 +120,8 @@ void player_update(Player *p, const game_input *input) {
     movement.x *= PLAYER_THRUST_BASE_SPEED;
     movement.y *= PLAYER_THRUST_BASE_SPEED;
 
-    p->velocity.x += movement.x;
-    p->velocity.y += movement.y;
+    p->velocity.x += movement.x * delta->sec;
+    p->velocity.y += movement.y * delta->sec;
   }
 
   if (input->fire == SDL_TRUE) {

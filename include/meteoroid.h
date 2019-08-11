@@ -4,6 +4,7 @@
 #include <rectf.h>
 #include <vec2f.h>
 #include <random.h>
+#include <game_clock.h>
 
 enum GENERATION {
   FIRST,
@@ -19,7 +20,7 @@ typedef struct meteoroid {
 } meteoroid;
 
 void meteoroid_init(meteoroid *m, enum GENERATION gen);
-void meteoroid_update(meteoroid *m);
+void meteoroid_update(meteoroid *m, game_frame *delta);
 void meteoroid_draw(const meteoroid *m);
 
 #endif

@@ -4,8 +4,8 @@
 
 #define PLAYER_SPRITE_SIZE 15.f
 
-#define PLAYER_ROT_SPEED 100.f
-#define PLAYER_THRUST_BASE_SPEED 15.f
+#define PLAYER_ROT_SPEED 150.f
+#define PLAYER_THRUST_BASE_SPEED 125.f
 #define PLAYER_THRUST_MAX_SPEED 2.f
 
 #define PLAYER_CROSSHAIR_OFFSET 15.f
@@ -137,8 +137,8 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
     movement.x *= PLAYER_THRUST_BASE_SPEED;
     movement.y *= PLAYER_THRUST_BASE_SPEED;
 
-    p->velocity.x += movement.x * delta->sec;
-    p->velocity.y += movement.y * delta->sec;
+    p->velocity.x = movement.x * delta->sec;
+    p->velocity.y = movement.y * delta->sec;
   }
 
   if (input->fire == SDL_TRUE && p->can_shoot) {
@@ -146,7 +146,6 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
   }
 
   update_bullets(p, delta);
-  vec2f_clamp(&p->velocity, PLAYER_THRUST_MAX_SPEED);
   player_rotate(p);
   player_move(p);
 }

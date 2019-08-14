@@ -81,7 +81,7 @@ void update_bullets(Player *p, const game_frame *delta) {
     // clean up "dead" bullets
     if (((bullet*)e->data)->health < 0.f) {
       dllist_element *prev = e->prev; // needed to correct iterator
-      int res = dllist_rem(&p->bullets, (void**)&b);
+      dllist_rem(&p->bullets, (void**)&b);
       destroy_bullet(b);
       e = prev; // correct iterator
     } else {

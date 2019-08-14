@@ -7,6 +7,7 @@
 #include <dllist.h>
 #include <meteoroid.h>
 #include <game_clock.h>
+#include <bullet.h>
 
 #define SDL_PRINT_ERROR printf("Error from SDL %s\n", SDL_GetError());
 #define SDL_REQUIRE_SUCCESS(x)  if ((x) != 0) SDL_PRINT_ERROR
@@ -46,16 +47,11 @@ void game_context_free(game_context *ctx) {
   SDL_DestroyWindow(ctx->window);
 }
 
-void update_entity_positions(game_context *ctx) {
+void keep_player_in_bounds(game_context *ctx) {
   SDL_Rect viewport;
-  dllist_element *e;
 
   renderer_get_viewport(&viewport);
   keep_in_bounds(&ctx->state->player->sprite, &viewport);
-  
-  for (e = ctx->state->meteoroids->head; e != NULL; e = e->next) {
-    keep_in_bounds(&((meteoroid*)e->data)->sprite, &viewport);
-  }
 }
 
 void destroy_meteoroid(void *data) {
@@ -66,11 +62,44 @@ void destroy_meteoroid(void *data) {
   SDL_free(m);
 }
 
-void update_meteoroids(dllist *l, game_frame *delta) {
+void meteoroid_bullets_collisions(game_state *state, meteoroid *m) {
+  dllist *bullets = &state->player->bullets;
   dllist_element *e;
 
-  for (e = l->head; e != NULL; e = e->next) {
-    meteoroid_update((meteoroid*)e->data, delta);
+  for (e = bullets->head; e != NULL; e = e->next) {
+    bullet *b;
+    
+    b = (bullet*)e->data;
+    if (rectf_intersects_rectf(&b->sprite, &m->sprite) == SDL_TRUE) {
+      m->health -= b->health;
+      b->health = 0;
+    }
+  }
+}
+
+void update_meteoroids(game_state *state, game_frame *delta) {
+  dllist_element *e;
+  meteoroid *m;
+  SDL_Rect viewport;
+
+  renderer_get_viewport(&viewport);
+
+  for (e = state->meteoroids->head; e != NULL;) {
+    m = (meteoroid*)e->data;
+
+    meteoroid_bullets_collisions(state, m);
+    meteoroid_update(m, delta);
+    keep_in_bounds(&m->sprite, &viewport);
+
+    if (m->health < 0) {
+      // handle generations
+      dllist_element *prev = e->prev;
+      dllist_rem(state->meteoroids, (void**)&m);
+      destroy_meteoroid(m);
+      e = prev;
+    } else {
+      e = e->next;
+    }
   }
 }
 
@@ -113,9 +142,9 @@ void game_update(game_context *ctx, game_frame *delta) {
   input = game_input_state(ctx->state->bindings);
 
   player_update(ctx->state->player, &input, delta);
-  update_meteoroids(ctx->state->meteoroids, delta);
+  update_meteoroids(ctx->state, delta);
 
-  update_entity_positions(ctx);
+  keep_player_in_bounds(ctx);
 }
 
 void game_draw(game_context *ctx) {

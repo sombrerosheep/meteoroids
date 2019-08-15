@@ -14,7 +14,6 @@
 #define SDL_REQUIRE_NOT_NULL(x) if ((x) == NULL) SDL_PRINT_ERROR
 
 #define NUM_STARTING_METEOROIDS 8
-#define METEOROID_VELOCITY_RANGE 1.2f
 
 typedef struct game_state {
   game_key_bindings *bindings;
@@ -95,6 +94,7 @@ void update_meteoroids(game_state *state, game_frame *delta) {
       // handle generations
       dllist_element *prev = e->prev;
       dllist_rem(state->meteoroids, (void**)&m);
+      meteoroid_seed_next_generation(state->meteoroids, m->gen, m->sprite.x, m->sprite.y);
       destroy_meteoroid(m);
       e = prev;
     } else {

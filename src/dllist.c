@@ -54,7 +54,7 @@ int dllist_rem(dllist *list, void **data) {
 
       if (element->next == NULL) {
         // removing tail
-        list->tail = NULL;
+        list->tail = element->prev;
       } else {
         element->next->prev = element->prev;
       }

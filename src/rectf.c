@@ -80,3 +80,40 @@ SDL_bool rectf_intersects_rectf(const rectf *a, const rectf *b) {
 
   return SDL_TRUE;
 }
+
+int rectf_intersects_circle(const rectf *a, float x, float y, float radius) {
+  vec2f ul, ur, ll, lr;
+  float mag, max;
+  int corner;
+
+  max = 0.f;
+  corner = -1;
+
+  ul = (vec2f){a->x - x, a->y - y};
+  ur = (vec2f){a->x + a->w - x, a->y - y};
+  ll = (vec2f){a->x - x, a->y + a->h - y};
+  lr = (vec2f){a->x + a->w - x, a->y + a->h - y};
+
+  mag = vec2f_magnitude(&ul);
+  if (mag > radius && mag < max) {
+    max = mag;
+    corner = 0;
+  }
+  mag = vec2f_magnitude(&ur);
+  if (mag > radius && mag < max) {
+    max = mag;
+    corner = 1;
+  }
+  mag = vec2f_magnitude(&ll);
+  if (mag > radius && mag < max) {
+    max = mag;
+    corner = 2;
+  }
+  mag = vec2f_magnitude(&lr);
+  if (mag > radius && mag < max) {
+    max = mag;
+    corner = 3;
+  }
+
+  return corner;
+}

@@ -8,6 +8,7 @@
 #include <meteoroid.h>
 #include <game_clock.h>
 #include <bullet.h>
+#include <time.h>
 
 #define SDL_PRINT_ERROR printf("Error from SDL %s\n", SDL_GetError());
 #define SDL_REQUIRE_SUCCESS(x)  if ((x) != 0) SDL_PRINT_ERROR
@@ -113,9 +114,12 @@ void draw_meteoroids(dllist *l) {
 
 void build_game_world(game_state *state) {
   float x, y, v_x, v_y;
+  float safe_zone;
+  int intersects;
   SDL_Rect viewport;
   meteoroid *m;
 
+  safe_zone = 100.f;
   renderer_get_viewport(&viewport);
 
   for (int i = 0; i < NUM_STARTING_METEOROIDS; i++) {
@@ -131,6 +135,30 @@ void build_game_world(game_state *state) {
     m->velocity.y = v_y;
     m->sprite.x = x;
     m->sprite.y = y;
+
+    intersects = rectf_intersects_circle(&m->sprite, 400.f, 300.f, safe_zone);
+    if (intersects != -1) {
+      switch (intersects) {
+        case 0:
+          m->sprite.x += 100.f;
+          m->sprite.y += 100.f;
+          break;
+        case 1:
+          m->sprite.x -= (100.f + 30.f);
+          m->sprite.y += (100.f + 30.f);
+          break;
+        case 2:
+          m->sprite.x += (100.f + 30.f);
+          m->sprite.y -= (100.f + 30.f);
+          break;
+        case 3:
+          m->sprite.x -= (100.f + 30.f);
+          m->sprite.y -= (100.f + 30.f);
+          break;
+        default:
+          break;
+      }
+    }
 
     dllist_ins(state->meteoroids, m);
   }
@@ -165,6 +193,8 @@ game_context* game_init(game_key_bindings *key_bindings) {
   Player *player;
   dllist *meteoroids;
 
+  random_init(clock());
+
   ctx = (game_context*)SDL_malloc(sizeof(game_context));
   state = (game_state*)SDL_malloc(sizeof(game_state));
   player = (Player*)SDL_malloc(sizeof(Player));
@@ -180,7 +210,7 @@ game_context* game_init(game_key_bindings *key_bindings) {
 
   renderer_set(renderer);
 
-  player_init(player, 100.f, 100.f);
+  player_init(player, 400.f - 7.5f, 300.f - 7.5f);
   state->player = player;
 
   if (key_bindings != NULL) {

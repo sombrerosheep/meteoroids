@@ -4,6 +4,7 @@ void game_input_clear(game_input *input) {
   input->left = SDL_FALSE;
   input->right = SDL_FALSE;
   input->thrust = SDL_FALSE;
+  input->brake = SDL_FALSE;
   input->fire = SDL_FALSE;
 }
 
@@ -26,6 +27,10 @@ game_input game_input_state(game_key_bindings *bindings) {
     input.thrust = SDL_TRUE;
   }
 
+  if (keys[bindings->brake]) {
+    input.brake = SDL_TRUE;
+  }
+
   if (keys[bindings->fire]) {
     input.fire = SDL_TRUE;
   }
@@ -41,6 +46,7 @@ game_key_bindings* key_bindings_get_default() {
   bindings->left = SDL_SCANCODE_A;
   bindings->right = SDL_SCANCODE_D;
   bindings->thrust = SDL_SCANCODE_W;
+  bindings->brake = SDL_SCANCODE_S;
   bindings->fire = SDL_SCANCODE_SPACE;
 
   return bindings;

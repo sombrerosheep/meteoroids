@@ -6,7 +6,7 @@
 
 #define PLAYER_ROT_SPEED 175.f
 #define PLAYER_THRUST_BASE_SPEED 125.f
-#define PLAYER_THRUST_MAX_SPEED 2.f
+#define PLAYER_BRAKE_SPEED 2.f
 
 #define PLAYER_CROSSHAIR_OFFSET 15.f
 
@@ -106,8 +106,19 @@ void player_move(Player *p) {
   p->crosshair.y += p->velocity.y;
 }
 
+vec2f get_normalized_player_direction(Player *p) {
+  vec2f normalized;
+
+  normalized.x = p->crosshair.x - p->sprite.x;
+  normalized.y = p->crosshair.y - p->sprite.y;
+
+  normalized = vec2f_normalize(&normalized);
+
+  return normalized;
+}
+
 void player_update(Player *p, const game_input *input, const game_frame *delta) {
-  vec2f movement;
+  vec2f movement, brake;
 
   p->shoot_cooldown += delta->mil;
   if (p->shoot_cooldown > PLAYER_SHOOT_COOLDOWN_MS) {
@@ -129,16 +140,32 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
   }
 
   if (input->thrust == SDL_TRUE) {
-    movement.x = p->crosshair.x - p->sprite.x;
-    movement.y = p->crosshair.y - p->sprite.y;
-
-    movement = vec2f_normalize(&movement);
+    movement = get_normalized_player_direction(p);
 
     movement.x *= PLAYER_THRUST_BASE_SPEED;
     movement.y *= PLAYER_THRUST_BASE_SPEED;
 
     p->velocity.x = movement.x * delta->sec;
     p->velocity.y = movement.y * delta->sec;
+  }
+
+  if (input->brake) {
+    brake = get_normalized_player_direction(p);
+
+    brake.x *= PLAYER_BRAKE_SPEED * -1.f * delta->sec;
+    brake.y *= PLAYER_BRAKE_SPEED * -1.f * delta->sec;
+
+    if (SDL_fabsf(p->velocity.x) - SDL_fabsf(brake.x) < 0) {
+      p->velocity.x = 0;
+    } else {
+      p->velocity.x += brake.x;
+    }
+
+    if (SDL_fabsf(p->velocity.y) - SDL_fabsf(brake.y) < 0) {
+      p->velocity.y = 0;
+    } else {
+      p->velocity.y += brake.y;
+    }
   }
 
   if (input->fire == SDL_TRUE && p->can_shoot) {

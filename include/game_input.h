@@ -7,6 +7,7 @@ typedef struct game_key_bindings {
   SDL_Scancode left;
   SDL_Scancode right;
   SDL_Scancode thrust;
+  SDL_Scancode brake;
   SDL_Scancode fire;
 } game_key_bindings;
 
@@ -14,6 +15,7 @@ typedef struct game_input {
   SDL_bool left;
   SDL_bool right;
   SDL_bool thrust;
+  SDL_bool brake;
   SDL_bool fire;
 } game_input;
 

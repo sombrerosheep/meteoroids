@@ -45,7 +45,7 @@ void render_draw_line(const vec2f *start, const vec2f *end, const SDL_Color *col
   RENDERER_DEFINED();
 
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
-  SDL_RenderDrawLine(renderer, start->x, start->y, end->x, end->y);
+  SDL_RenderDrawLineF(renderer, start->x, start->y, end->x, end->y);
 
   return;
 }

@@ -22,9 +22,8 @@ void render_fill_rectf(const rectf *rect, const SDL_Color *color) {
 
   RENDERER_DEFINED();
 
-  rec = rectf_to_rect(rect);
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
-  SDL_RenderFillRect(renderer, &rec);
+  SDL_RenderFillRectF(renderer, rect);
 
   return;
 }
@@ -34,9 +33,8 @@ void render_draw_rectf(const rectf *rect, const SDL_Color *color) {
 
   RENDERER_DEFINED();
 
-  rec = rectf_to_rect(rect);
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
-  SDL_RenderDrawRect(renderer, &rec);
+  SDL_RenderDrawRectF(renderer, rect);
 
   return;
 }
@@ -55,16 +53,9 @@ void render_fill_rectfs(const rectf *rect, int num_rects, const SDL_Color *color
 
   RENDERER_DEFINED();
   
-  recs = (SDL_Rect*)malloc(sizeof(SDL_Rect) * num_rects);
-
-  for (int i = 0; i < num_rects; i++) {
-    recs[i] = rectf_to_rect(&rect[i]);
-  }
-
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
-  SDL_RenderFillRects(renderer, recs, num_rects);
+  SDL_RenderFillRectsF(renderer, rect, num_rects);
 
-  SDL_free(recs);
   return;
 }
 
@@ -72,16 +63,9 @@ void render_draw_rectfs(const rectf *rect, int num_rects, const SDL_Color *color
   SDL_Rect *recs;
 
   RENDERER_DEFINED();
-  
-  recs = (SDL_Rect*)malloc(sizeof(SDL_Rect) * num_rects);
-
-  for (int i = 0; i < num_rects; i++) {
-    recs[i] = rectf_to_rect(&rect[i]);
-  }
 
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
-  SDL_RenderDrawRects(renderer, recs, num_rects);
+  SDL_RenderDrawRectsF(renderer, rect, num_rects);
 
-  SDL_free(recs);
   return;
 }

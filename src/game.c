@@ -193,6 +193,13 @@ game_context* game_init(game_key_bindings *key_bindings) {
   Player *player;
   dllist *meteoroids;
 
+  if (!SDL_VERSION_ATLEAST(2, 0, 10)) {
+    SDL_version ver;
+    SDL_GetVersion(&ver);
+    printf("Minimum SDL Version not met.\n\tWant 2.10.0+.\n\tHave: %d.%d.%d\n", ver.major, ver.minor, ver.patch);
+    return NULL;
+  }
+
   random_init(clock());
 
   ctx = (game_context*)SDL_malloc(sizeof(game_context));

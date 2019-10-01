@@ -21,14 +21,13 @@ int dllist_ins(dllist *list, void *data) {
 
   if (list->head == NULL) {
     list->head = element;
-    list->tail = element;
     element->prev = NULL;
   } else {
     list->tail->next = element;
     element->prev = list->tail;
-    list->tail = element;
   }
 
+  list->tail = element;
   list->size++;
   return 0;
 }

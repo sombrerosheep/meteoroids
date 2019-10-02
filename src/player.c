@@ -1,10 +1,11 @@
 #include <player.h>
 #include <renderer.h>
 #include <bullet.h>
+#include <math.h>
 
 #define PLAYER_SPRITE_SIZE 15.f
 
-#define PLAYER_ROT_SPEED 175.f
+#define PLAYER_ROT_SPEED 4.f
 #define PLAYER_THRUST_BASE_SPEED 125.f
 #define PLAYER_BRAKE_SPEED 2.f
 
@@ -12,7 +13,10 @@
 
 #define PLAYER_SHOOT_COOLDOWN_MS 300
 
-#define DEG_TO_RAD 0.01745329251994329576924f
+#define PLAYER_POINT_0 (vec2f){ -5.f, 7.5f }
+#define PLAYER_POINT_1 (vec2f){ 0.f , -7.5f }
+#define PLAYER_POINT_2 (vec2f){ 5.f, 7.5f }
+#define PLAYER_POINTS 3
 
 static SDL_Color player_color = { 0x0, 0xF0, 0x0, 0xFF };
 
@@ -24,38 +28,17 @@ void destroy_bullet(void *data) {
   SDL_free(b);
 }
 
-void player_rotate(Player *p) {
-  float cross_x, cross_y;
-  vec2f player_center;
-
-  cross_x = SDL_cosf(p->rotation * DEG_TO_RAD);
-  cross_y = SDL_sinf(p->rotation * DEG_TO_RAD);
-
-  cross_x *= PLAYER_CROSSHAIR_OFFSET;
-  cross_y *= PLAYER_CROSSHAIR_OFFSET;
-
-  player_center = rectf_center(&p->sprite);
-
-  cross_x += player_center.x;
-  cross_y += player_center.y;
-
-  p->crosshair.x = cross_x - p->crosshair.w / 2;
-  p->crosshair.y = cross_y - p->crosshair.h / 2;
-}
-
 void player_shoot(Player *p) {
   float x, y, v_x, v_y;
-  vec2f bullet_vec, player_center;
   bullet *b;
 
   b = SDL_malloc(sizeof(bullet));
 
-  v_x = SDL_cosf(p->rotation * DEG_TO_RAD);
-  v_y = SDL_sinf(p->rotation * DEG_TO_RAD);
-  player_center = rectf_center(&p->sprite);
+  v_x = SDL_cosf(p->rotation);
+  v_y = SDL_sinf(p->rotation);
 
-  x = v_x + player_center.x;
-  y = v_y + player_center.y;
+  x = v_x + p->pos.x;
+  y = v_y + p->pos.y;
 
   bullet_init(b, x, y, v_x, v_y);
   
@@ -99,18 +82,16 @@ void draw_bullets(const Player *p) {
 }
 
 void player_move(Player *p) {
-  p->sprite.x += p->velocity.x;
-  p->sprite.y += p->velocity.y;
-
-  p->crosshair.x += p->velocity.x;
-  p->crosshair.y += p->velocity.y;
+  p->pos.x += p->velocity.x;
+  p->pos.y += p->velocity.y;
 }
 
 vec2f get_normalized_player_direction(Player *p) {
   vec2f normalized;
 
-  normalized.x = p->crosshair.x - p->sprite.x;
-  normalized.y = p->crosshair.y - p->sprite.y;
+  // TODO: This may already be normalized...
+  normalized.x = SDL_cosf(p->rotation);
+  normalized.y = SDL_sinf(p->rotation);
 
   normalized = vec2f_normalize(&normalized);
 
@@ -173,44 +154,37 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
   }
 
   update_bullets(p, delta);
-  player_rotate(p);
   player_move(p);
 }
 
 void player_draw(const Player *p) {
-  vec2f player_cen, cross_cen;
+  shape global;
 
-  player_cen = rectf_center(&p->sprite);
-  cross_cen = rectf_center(&p->crosshair);
+  shape_shift(&p->sprite, &global, p->pos);
 
   draw_bullets(p);
-  render_draw_line(&player_cen, &cross_cen, &player_color);
-  render_fill_rectf(&p->sprite, &player_color);
-  render_fill_rectf(&p->crosshair, &player_color);
+  shape_draw(&global, &player_color);
 }
 
 void player_init(Player *p, float x, float y) {
   p->can_shoot = SDL_TRUE;
   p->shoot_cooldown = 0;
 
-  p->rotation = 270.f;
+  p->rotation = M_PI + M_PI_2;
   
   p->velocity.x = 0.f;
   p->velocity.y = 0.f;
-  
-  p->sprite.x = x;
-  p->sprite.y = y;
-  p->sprite.w = PLAYER_SPRITE_SIZE;
-  p->sprite.h = PLAYER_SPRITE_SIZE;
 
-  p->crosshair.x = 0.f;
-  p->crosshair.y = 0.f;
-  p->crosshair.w = 5.f;
-  p->crosshair.h = 5.f;
+  shape_init(&p->sprite, (vec2f[]){
+    PLAYER_POINT_0,
+    PLAYER_POINT_1,
+    PLAYER_POINT_2
+  },
+  PLAYER_POINTS);
+
+  p->pos = (vec2f){ x, y };  
 
   dllist_init(&p->bullets, destroy_bullet);
-
-  player_rotate(p);
 }
 
 void player_free(Player *p) {

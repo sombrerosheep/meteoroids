@@ -6,11 +6,12 @@
 #include <game_input.h>
 #include <dllist.h>
 #include <game_clock.h>
+#include <shape.h>
 
 typedef struct Player {
   vec2f velocity;
-  rectf crosshair;
-  rectf sprite;
+  vec2f pos;
+  shape sprite;
   dllist bullets;
   float rotation;
   SDL_bool can_shoot;

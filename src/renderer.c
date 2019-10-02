@@ -18,8 +18,6 @@ void renderer_get_viewport(SDL_Rect *viewport) {
 }
 
 void render_fill_rectf(const rectf *rect, const SDL_Color *color) {
-  SDL_Rect rec;
-
   RENDERER_DEFINED();
 
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
@@ -29,8 +27,6 @@ void render_fill_rectf(const rectf *rect, const SDL_Color *color) {
 }
 
 void render_draw_rectf(const rectf *rect, const SDL_Color *color) {
-  SDL_Rect rec;
-
   RENDERER_DEFINED();
 
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
@@ -49,8 +45,6 @@ void render_draw_line(const vec2f *start, const vec2f *end, const SDL_Color *col
 }
 
 void render_fill_rectfs(const rectf *rect, int num_rects, const SDL_Color *color) {
-  SDL_Rect *recs;
-
   RENDERER_DEFINED();
   
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
@@ -60,12 +54,17 @@ void render_fill_rectfs(const rectf *rect, int num_rects, const SDL_Color *color
 }
 
 void render_draw_rectfs(const rectf *rect, int num_rects, const SDL_Color *color) {
-  SDL_Rect *recs;
-
   RENDERER_DEFINED();
 
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
   SDL_RenderDrawRectsF(renderer, rect, num_rects);
 
   return;
+}
+
+void render_draw_lines(const vec2f *points, int num_points, const SDL_Color *color) {
+  RENDERER_DEFINED();
+
+  SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
+  SDL_RenderDrawLinesF(renderer, points, num_points);
 }

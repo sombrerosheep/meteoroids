@@ -44,6 +44,33 @@ SDL_bool keep_in_bounds(rectf *entity, const SDL_Rect *viewport) {
   return adjusted;
 }
 
+SDL_bool rectf_outersects(rectf *rec, const SDL_Rect *viewport, vec2f *offset) {
+  SDL_bool adjusted = SDL_FALSE;
+  rectf entity = *rec;
+
+  if (entity.x + entity.w < 0) {
+    entity.x += viewport->w;
+    adjusted = SDL_TRUE;
+  }
+  if (entity.x > viewport->w) {
+    entity.x -= viewport->w;
+    adjusted = SDL_TRUE;
+  }
+  if (entity.y + entity.h < 0) {
+    entity.y += viewport->h;
+    adjusted = SDL_TRUE;
+  }
+  if (entity.y > viewport->h) {
+    entity.y -= viewport->h;
+    adjusted = SDL_TRUE;
+  }
+
+  offset->x = entity.x - rec->x;
+  offset->y = entity.y - rec->y;
+
+  return adjusted;
+}
+
 SDL_bool rectf_intersects_rectf(const rectf *a, const rectf *b) {
   float a_min, a_max;
   float b_min, b_max;

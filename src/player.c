@@ -160,7 +160,9 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
 void player_draw(const Player *p) {
   shape global;
 
-  shape_shift(&p->sprite, &global, p->pos);
+  shape_init(&global, p->sprite.points, p->sprite.num_points);
+  shape_rotate(&global, p->rotation);
+  shape_translate(&global, p->pos);
 
   draw_bullets(p);
   shape_draw(&global, &player_color);
@@ -181,6 +183,7 @@ void player_init(Player *p, float x, float y) {
     PLAYER_POINT_2
   },
   PLAYER_POINTS);
+  shape_rotate(&p->sprite, M_PI_2);
 
   p->pos = (vec2f){ x, y };  
 

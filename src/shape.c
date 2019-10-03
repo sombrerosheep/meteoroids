@@ -47,14 +47,29 @@ rectf shape_aabb(const shape *s) {
   return aabb;
 }
 
-void shape_shift(const shape *src, shape *dst, vec2f offset) {
-  shape_init(dst, src->points, src->num_points);
+void shape_translate(shape *s,vec2f offset) {
+  for (int i = 0; i < s->num_points; i++) {
+    vec2f p = s->points[i];
 
-  for (int i = 0; i < src->num_points; i++) {
-    dst->points[i] = (vec2f){
-      src->points[i].x + offset.x,
-      src->points[i].y + offset.y
+    s->points[i] = (vec2f){
+      p.x + offset.x,
+      p.y + offset.y
     };
+  }
+
+  return;
+}
+
+void shape_rotate(shape *s, float angle) {
+  float angle_sin = SDL_sinf(angle);
+  float angle_cos = SDL_cosf(angle);
+
+  for (int i = 0; i < s->num_points; i++) {
+    vec2f p = s->points[i];
+    float rot_x = angle_cos * p.x + -angle_sin * p.y;
+    float rot_y = angle_sin * p.x + angle_cos * p.y;
+
+    s->points[i] = (vec2f){ rot_x, rot_y };
   }
 
   return;

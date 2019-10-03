@@ -11,7 +11,8 @@ typedef struct shape {
 
 void shape_init(shape *s, vec2f *p, int count);
 rectf shape_aabb(const shape *s);
-void shape_shift(const shape *src, shape *dst, vec2f offset);
+void shape_translate(shape *s, vec2f offset);
+void shape_rotate(shape *s, float angle);
 void shape_draw(const shape *s, const SDL_Color *c);
 void shape_destory(shape *s);
 

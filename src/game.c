@@ -49,9 +49,16 @@ void game_context_free(game_context *ctx) {
 
 void keep_player_in_bounds(game_context *ctx) {
   SDL_Rect viewport;
+  vec2f offset;
+  rectf aabb = shape_aabb(&ctx->state->player->sprite);
+  aabb.x += ctx->state->player->pos.x;
+  aabb.y += ctx->state->player->pos.y;
 
   renderer_get_viewport(&viewport);
-  keep_in_bounds(&ctx->state->player->sprite, &viewport);
+  if (rectf_outersects(&aabb, &viewport, &offset) == SDL_TRUE) {
+    ctx->state->player->pos.x += offset.x;
+    ctx->state->player->pos.y += offset.y;
+  }
 }
 
 void destroy_meteoroid(void *data) {

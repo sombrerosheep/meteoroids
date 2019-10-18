@@ -85,7 +85,6 @@ message(STATUS "")
 #### Build ####
 file(GLOB meteoroids_source
   "${meteoroids_source_dir}/*.c"
-  "${meteoroids_source_dir}/core/*.c"
 )
 add_executable(meteoroids ${meteoroids_source})
 target_include_directories(meteoroids PUBLIC ${meteoroids_include_dir} ${SDL2_INCLUDE_DIR})

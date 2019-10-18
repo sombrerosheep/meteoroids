@@ -1,6 +1,7 @@
 #include <shape.h>
 
 #include <renderer.h>
+#include <maths.h>
 
 void shape_init(shape *s, vec2f *p, int count) {
   s->num_points = count;
@@ -41,8 +42,8 @@ rectf shape_aabb(const shape *s) {
 
   aabb.x = min_x;
   aabb.y = min_y;
-  aabb.w = SDL_fabsf(max_x - min_x);
-  aabb.h = SDL_fabsf(max_y - min_y);
+  aabb.w = maths_fabsf(max_x - min_x);
+  aabb.h = maths_fabsf(max_y - min_y);
 
   return aabb;
 }
@@ -61,8 +62,8 @@ void shape_translate(shape *s,vec2f offset) {
 }
 
 void shape_rotate(shape *s, float angle) {
-  float angle_sin = SDL_sinf(angle);
-  float angle_cos = SDL_cosf(angle);
+  float angle_sin = maths_sinf(angle);
+  float angle_cos = maths_cosf(angle);
 
   for (int i = 0; i < s->num_points; i++) {
     vec2f p = s->points[i];

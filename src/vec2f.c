@@ -1,13 +1,14 @@
 #include <vec2f.h>
 
 #include <SDL.h>
+#include <maths.h>
 
 float vec2f_magnitude(const vec2f *rect) {
   float x_sq, y_sq, mag;
 
-  x_sq = SDL_powf(rect->x, 2);
-  y_sq = SDL_powf(rect->y, 2);
-  mag = SDL_sqrtf(x_sq + y_sq);
+  x_sq = maths_powf(rect->x, 2);
+  y_sq = maths_powf(rect->y, 2);
+  mag = maths_sqrtf(x_sq + y_sq);
 
   return mag;
 }

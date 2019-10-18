@@ -3,6 +3,7 @@
 
 #include <vec2f.h>
 #include <rectf.h>
+#include <SDL.h>
 
 typedef struct shape {
   vec2f *points;

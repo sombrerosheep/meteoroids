@@ -1,9 +1,7 @@
 #include <player.h>
 #include <renderer.h>
 #include <bullet.h>
-
-#define M_PI       3.14159265358979323846   // pi
-#define M_PI_2     1.57079632679489661923   // pi/2
+#include <maths.h>
 
 #define PLAYER_SPRITE_SIZE 15.f
 
@@ -36,8 +34,8 @@ void player_shoot(Player *p) {
 
   b = SDL_malloc(sizeof(bullet));
 
-  v_x = SDL_cosf(p->rotation);
-  v_y = SDL_sinf(p->rotation);
+  v_x = maths_cosf(p->rotation);
+  v_y = maths_sinf(p->rotation);
 
   x = v_x + p->pos.x;
   y = v_y + p->pos.y;
@@ -92,8 +90,8 @@ vec2f get_normalized_player_direction(Player *p) {
   vec2f normalized;
 
   // TODO: This may already be normalized...
-  normalized.x = SDL_cosf(p->rotation);
-  normalized.y = SDL_sinf(p->rotation);
+  normalized.x = maths_cosf(p->rotation);
+  normalized.y = maths_sinf(p->rotation);
 
   normalized = vec2f_normalize(&normalized);
 
@@ -138,13 +136,13 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
     brake.x *= PLAYER_BRAKE_SPEED * -1.f * delta->sec;
     brake.y *= PLAYER_BRAKE_SPEED * -1.f * delta->sec;
 
-    if (SDL_fabsf(p->velocity.x) - SDL_fabsf(brake.x) < 0) {
+    if (maths_fabsf(p->velocity.x) - maths_fabsf(brake.x) < 0) {
       p->velocity.x = 0;
     } else {
       p->velocity.x += brake.x;
     }
 
-    if (SDL_fabsf(p->velocity.y) - SDL_fabsf(brake.y) < 0) {
+    if (maths_fabsf(p->velocity.y) - maths_fabsf(brake.y) < 0) {
       p->velocity.y = 0;
     } else {
       p->velocity.y += brake.y;
@@ -174,7 +172,7 @@ void player_init(Player *p, float x, float y) {
   p->can_shoot = SDL_TRUE;
   p->shoot_cooldown = 0;
 
-  p->rotation = M_PI + M_PI_2;
+  p->rotation = MATHS_PI + MATHS_PI_2;
   
   p->velocity.x = 0.f;
   p->velocity.y = 0.f;
@@ -185,7 +183,7 @@ void player_init(Player *p, float x, float y) {
     PLAYER_POINT_2
   },
   PLAYER_POINTS);
-  shape_rotate(&p->sprite, M_PI_2);
+  shape_rotate(&p->sprite, MATHS_PI_2);
 
   p->pos = (vec2f){ x, y };  
 

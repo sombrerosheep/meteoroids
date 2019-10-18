@@ -1,6 +1,7 @@
 #include <game.h>
 #include <player.h>
 
+#include <stdio.h>
 #include <SDL.h>
 #include <player.h>
 #include <renderer.h>

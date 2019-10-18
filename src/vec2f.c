@@ -13,10 +13,13 @@ float vec2f_magnitude(const vec2f *rect) {
 }
 
 vec2f vec2f_normalize(const vec2f *rect) {
-  vec2f unit;
-  float mag;
+  vec2f unit = { 0.f, 0.f };
 
-  mag = vec2f_magnitude(rect);
+  float mag = vec2f_magnitude(rect);
+  if (mag == 0.f) {
+    return unit;
+  }
+
   unit.x = rect->x / mag;
   unit.y = rect->y / mag;
 

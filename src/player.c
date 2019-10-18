@@ -1,7 +1,9 @@
 #include <player.h>
 #include <renderer.h>
 #include <bullet.h>
-#include <math.h>
+
+#define M_PI       3.14159265358979323846   // pi
+#define M_PI_2     1.57079632679489661923   // pi/2
 
 #define PLAYER_SPRITE_SIZE 15.f
 
@@ -131,7 +133,7 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
   }
 
   if (input->brake) {
-    brake = get_normalized_player_direction(p);
+    brake = vec2f_normalize(&p->velocity);
 
     brake.x *= PLAYER_BRAKE_SPEED * -1.f * delta->sec;
     brake.y *= PLAYER_BRAKE_SPEED * -1.f * delta->sec;

@@ -85,6 +85,45 @@ void meteoroid_bullets_collisions(game_state *state, meteoroid *m) {
   }
 }
 
+void resolve_meteoroid_collisions(meteoroid *m, dllist *list) {
+  for (dllist_element *e = list->head; e != NULL; e = e->next) {
+    vec2f v = m->velocity;
+    meteoroid *em = e->data;
+    rectf intersect = { 0.f, 0.f, 0.f, 0.f };
+
+    if (em == m) {
+      continue;
+    }
+
+    // back off the intersection amount and then set the velocity
+    if (rectf_intersection(&m->sprite, &em->sprite, &intersect) == SDL_TRUE) {
+      if (intersect.h > intersect.w) {
+        // assume that hit was left or right
+        m->velocity.x *= -1.f;
+        if (intersect.x > m->sprite.x) {
+          // collision was on right
+          m->sprite.x -= intersect.w;
+        } else {
+          // collision was on left
+          m->sprite.x += intersect.w;
+        }
+      } else {
+        // assume that hit was top or bottom
+        m->velocity.y *= -1.f;
+        if (intersect.y > m->sprite.y) {
+          // collision was on bottom
+          m->sprite.y -= intersect.h;
+        } else {
+          // collision was on top
+          m->sprite.y += intersect.h;
+        }
+      }
+
+      return;
+    }
+  }
+}
+
 void update_meteoroids(game_state *state, game_frame *delta) {
   dllist_element *e;
   meteoroid *m;
@@ -109,6 +148,8 @@ void update_meteoroids(game_state *state, game_frame *delta) {
     } else {
       e = e->next;
     }
+
+    resolve_meteoroid_collisions(m, state->meteoroids);
   }
 }
 
@@ -225,7 +266,7 @@ game_context* game_init(game_key_bindings *key_bindings) {
 
   renderer_set(renderer);
 
-  player_init(player, 400.f - 7.5f, 300.f - 7.5f);
+  player_init(player, 400.f, 300.f);
   state->player = player;
 
   if (key_bindings != NULL) {

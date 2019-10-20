@@ -115,9 +115,9 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
   }
 
   if (p->rotation < 0.f) {
-    p->rotation = p->rotation + 360.f;
-  } else if (p->rotation > 360.f) {
-    p->rotation = 360 - p->rotation;
+    p->rotation = p->rotation + MATHS_2_PI;
+  } else if (p->rotation > MATHS_2_PI) {
+    p->rotation = MATHS_2_PI - p->rotation;
   }
 
   if (input->thrust == SDL_TRUE) {

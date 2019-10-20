@@ -19,6 +19,7 @@
 #define PLAYER_POINTS 3
 
 static SDL_Color player_color = { 0x0, 0xF0, 0x0, 0xFF };
+static SDL_Color aabb_color = { 0xF0, 0x00, 0x0, 0xFF };
 
 void destroy_bullet(void *data) {
   bullet *b;
@@ -163,9 +164,12 @@ void player_draw(const Player *p) {
   shape_init(&global, p->sprite.points, p->sprite.num_points);
   shape_rotate(&global, p->rotation);
   shape_translate(&global, p->pos);
+  rectf aabb = shape_aabb(&global);
 
   draw_bullets(p);
   shape_draw(&global, &player_color);
+
+  render_draw_rectf(&aabb, &aabb_color);
 }
 
 void player_init(Player *p, float x, float y) {

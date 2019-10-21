@@ -1,5 +1,4 @@
 #include <rectf.h>
-#include <SDL.h>
 
 vec2f rectf_center(const rectf *rect) {
   vec2f cen;
@@ -177,4 +176,11 @@ int rectf_intersects_circle(const rectf *a, float x, float y, float radius) {
   }
 
   return corner;
+}
+
+SDL_bool rectf_contains_vec2f(const rectf *rec, const vec2f *vec) {
+  return vec->x >= rec->x &&
+         vec->x <= rec->x + rec->w &&
+         vec->y >= rec->y &&
+         vec->y <= rec->y + rec->h;
 }

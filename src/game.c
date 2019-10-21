@@ -21,7 +21,6 @@ typedef struct game_state {
   game_key_bindings *bindings;
   Player *player;
   dllist *meteoroids;
-
 } game_state;
 
 typedef struct game_context {
@@ -124,6 +123,23 @@ void resolve_meteoroid_collisions(meteoroid *m, dllist *list) {
   }
 }
 
+void update_player_collisions(Player *p, dllist *meteoroids) {
+  shape player_global;
+  shape_init(&player_global, p->sprite.points, p->sprite.num_points);
+  shape_rotate(&player_global, p->rotation);
+  shape_translate(&player_global, p->pos);
+
+  for (int i = 0; i < player_global.num_points; i++) {
+    for (dllist_element *e = meteoroids->head; e != NULL; e = e->next) {
+      meteoroid *m = e->data;
+      if (rectf_contains_vec2f(&m->sprite, &player_global.points[i]) == SDL_TRUE) {
+        p->alive = SDL_FALSE;
+        return;
+      }
+    }
+  }
+}
+
 void update_meteoroids(game_state *state, game_frame *delta) {
   dllist_element *e;
   meteoroid *m;
@@ -220,6 +236,7 @@ void game_update(game_context *ctx, game_frame *delta) {
 
   player_update(ctx->state->player, &input, delta);
   update_meteoroids(ctx->state, delta);
+  update_player_collisions(ctx->state->player, ctx->state->meteoroids);
 
   keep_player_in_bounds(ctx);
 }

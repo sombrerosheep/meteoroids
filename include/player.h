@@ -15,6 +15,7 @@ typedef struct Player {
   dllist bullets;
   float rotation;
   SDL_bool can_shoot;
+  SDL_bool alive;
   unsigned int shoot_cooldown;
 } Player;
 

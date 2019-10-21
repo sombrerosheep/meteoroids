@@ -18,7 +18,8 @@
 #define PLAYER_POINT_2 (vec2f){ 5.f, 7.5f }
 #define PLAYER_POINTS 3
 
-static SDL_Color player_color = { 0x0, 0xF0, 0x0, 0xFF };
+static SDL_Color player_alive_color = { 0x0, 0xF0, 0x0, 0xFF };
+static SDL_Color player_dead_color = { 0xF0, 0x11, 0x11, 0xFF };
 static SDL_Color aabb_color = { 0xF0, 0x00, 0x0, 0xFF };
 
 void destroy_bullet(void *data) {
@@ -102,6 +103,10 @@ vec2f get_normalized_player_direction(Player *p) {
 void player_update(Player *p, const game_input *input, const game_frame *delta) {
   vec2f movement, brake;
 
+  if (p->alive == SDL_FALSE) {
+    return;
+  }
+
   p->shoot_cooldown += delta->mil;
   if (p->shoot_cooldown > PLAYER_SHOOT_COOLDOWN_MS) {
     p->can_shoot = SDL_TRUE;
@@ -159,22 +164,31 @@ void player_update(Player *p, const game_input *input, const game_frame *delta) 
 }
 
 void player_draw(const Player *p) {
+  SDL_Color player_color;
   shape global;
+
+  if (p->alive == SDL_TRUE) {
+    player_color = player_alive_color;
+  } else {
+    player_color = player_dead_color;
+  }
 
   shape_init(&global, p->sprite.points, p->sprite.num_points);
   shape_rotate(&global, p->rotation);
   shape_translate(&global, p->pos);
+  
   rectf aabb = shape_aabb(&global);
+  render_draw_rectf(&aabb, &aabb_color);
 
   draw_bullets(p);
   shape_draw(&global, &player_color);
-
-  render_draw_rectf(&aabb, &aabb_color);
 }
 
 void player_init(Player *p, float x, float y) {
   p->can_shoot = SDL_TRUE;
   p->shoot_cooldown = 0;
+
+  p->alive = SDL_TRUE;
 
   p->rotation = MATHS_PI + MATHS_PI_2;
   

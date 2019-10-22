@@ -100,63 +100,69 @@ vec2f get_normalized_player_direction(Player *p) {
   return normalized;
 }
 
+void player_decay_movement(Player *p, float rate, const game_frame *delta) {
+  vec2f brake = vec2f_normalize(&p->velocity);
+
+  brake.x *= PLAYER_BRAKE_SPEED * -rate * delta->sec;
+  brake.y *= PLAYER_BRAKE_SPEED * -rate * delta->sec;
+
+  if (maths_fabsf(p->velocity.x) - maths_fabsf(brake.x) < 0) {
+    p->velocity.x = 0;
+  } else {
+    p->velocity.x += brake.x;
+  }
+
+  if (maths_fabsf(p->velocity.y) - maths_fabsf(brake.y) < 0) {
+    p->velocity.y = 0;
+  } else {
+    p->velocity.y += brake.y;
+  }
+}
+
 void player_update(Player *p, const game_input *input, const game_frame *delta) {
   vec2f movement, brake;
 
-  if (p->alive == SDL_FALSE) {
-    return;
-  }
-
-  p->shoot_cooldown += delta->mil;
-  if (p->shoot_cooldown > PLAYER_SHOOT_COOLDOWN_MS) {
-    p->can_shoot = SDL_TRUE;
-  }
-
-  if (input->left == SDL_TRUE) {
-    p->rotation -= PLAYER_ROT_SPEED * delta->sec;
-  }
-  
-  if (input->right == SDL_TRUE) {
-    p->rotation += PLAYER_ROT_SPEED * delta->sec;
-  }
-
-  if (p->rotation < 0.f) {
-    p->rotation = p->rotation + MATHS_2_PI;
-  } else if (p->rotation > MATHS_2_PI) {
-    p->rotation = MATHS_2_PI - p->rotation;
-  }
-
-  if (input->thrust == SDL_TRUE) {
-    movement = get_normalized_player_direction(p);
-
-    movement.x *= PLAYER_THRUST_BASE_SPEED;
-    movement.y *= PLAYER_THRUST_BASE_SPEED;
-
-    p->velocity.x = movement.x * delta->sec;
-    p->velocity.y = movement.y * delta->sec;
-  }
-
-  if (input->brake) {
-    brake = vec2f_normalize(&p->velocity);
-
-    brake.x *= PLAYER_BRAKE_SPEED * -1.f * delta->sec;
-    brake.y *= PLAYER_BRAKE_SPEED * -1.f * delta->sec;
-
-    if (maths_fabsf(p->velocity.x) - maths_fabsf(brake.x) < 0) {
-      p->velocity.x = 0;
-    } else {
-      p->velocity.x += brake.x;
+  if (p->alive == SDL_TRUE) {
+    p->shoot_cooldown += delta->mil;
+    if (p->shoot_cooldown > PLAYER_SHOOT_COOLDOWN_MS) {
+      p->can_shoot = SDL_TRUE;
     }
 
-    if (maths_fabsf(p->velocity.y) - maths_fabsf(brake.y) < 0) {
-      p->velocity.y = 0;
-    } else {
-      p->velocity.y += brake.y;
+    if (input->left == SDL_TRUE) {
+      p->rotation -= PLAYER_ROT_SPEED * delta->sec;
     }
-  }
+    
+    if (input->right == SDL_TRUE) {
+      p->rotation += PLAYER_ROT_SPEED * delta->sec;
+    }
 
-  if (input->fire == SDL_TRUE && p->can_shoot) {
-    player_shoot(p);
+    if (p->rotation < 0.f) {
+      p->rotation = p->rotation + MATHS_2_PI;
+    } else if (p->rotation > MATHS_2_PI) {
+      p->rotation = MATHS_2_PI - p->rotation;
+    }
+
+    if (input->thrust == SDL_TRUE) {
+      movement = get_normalized_player_direction(p);
+
+      movement.x *= PLAYER_THRUST_BASE_SPEED;
+      movement.y *= PLAYER_THRUST_BASE_SPEED;
+
+      p->velocity.x = movement.x * delta->sec;
+      p->velocity.y = movement.y * delta->sec;
+    }
+
+    if (input->brake || p->alive == SDL_FALSE) {
+      player_decay_movement(p, 1.f, delta);
+    }
+
+    if (input->fire == SDL_TRUE && p->can_shoot) {
+      player_shoot(p);
+    }
+  } else {
+    if (p->velocity.x != 0.f || p->velocity.y != 0.f) {
+      player_decay_movement(p, 0.25f, delta);
+    }
   }
 
   update_bullets(p, delta);

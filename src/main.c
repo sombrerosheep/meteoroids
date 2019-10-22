@@ -12,7 +12,7 @@ int main(int argc, char* argv) {
 
   game_start(ctx);
 
-  game_free(ctx);
+  game_destroy(ctx);
 
   return 0;
 }

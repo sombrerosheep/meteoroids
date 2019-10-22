@@ -29,24 +29,6 @@ typedef struct game_context {
   game_state *state;
 } game_context;
 
-void game_state_free(game_state *state) {
-  player_free(state->player);
-  dllist_destroy(state->meteoroids);
-
-  SDL_free(state->meteoroids);
-  SDL_free(state->bindings);
-  SDL_free(state);
-
-  SDL_memset(state, 0, sizeof(game_state));
-}
-
-void game_context_free(game_context *ctx) {
-  game_state_free(ctx->state);
-
-  SDL_DestroyRenderer(ctx->renderer);
-  SDL_DestroyWindow(ctx->window);
-}
-
 void keep_player_in_bounds(game_context *ctx) {
   SDL_Rect viewport;
   vec2f offset;
@@ -325,6 +307,20 @@ void game_start(game_context *ctx) {
   }
 }
 
-void game_free(game_context *ctx) {
-  game_context_free(ctx);
+void game_destroy(game_context *ctx) {
+  ctx->state->bindings = NULL;
+  
+  player_destroy(ctx->state->player);
+  SDL_free(ctx->state->player);
+  ctx->state->player = NULL;
+  
+  dllist_destroy(ctx->state->meteoroids);
+  SDL_free(ctx->state->meteoroids);
+  ctx->state->player = NULL;
+  
+  SDL_free(ctx->state);
+  ctx->state = NULL;
+
+  SDL_DestroyRenderer(ctx->renderer);
+  SDL_DestroyWindow(ctx->window);
 }

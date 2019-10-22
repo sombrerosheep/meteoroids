@@ -80,7 +80,7 @@ void shape_draw(const shape *s, const SDL_Color *c) {
   render_draw_lines(s->points, s->num_points, c);
 }
 
-void shape_free(shape *s) {
+void shape_destroy(shape *s) {
   SDL_free(s->points);
   s->points = NULL;
   s->num_points = 0;

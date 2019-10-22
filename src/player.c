@@ -211,10 +211,13 @@ void player_init(Player *p, float x, float y) {
   dllist_init(&p->bullets, destroy_bullet);
 }
 
-void player_free(Player *p) {
+void player_destroy(Player *p) {
+  p->velocity = (vec2f){ 0.f, 0.f };
+  p->pos = (vec2f){ 0.f, 0.f };
+  shape_destroy(&p->sprite);
   dllist_destroy(&p->bullets);
-
-  SDL_free(p);
-
-  SDL_memset(p, 0, sizeof(Player));
+  p->rotation = 0.f;
+  p->can_shoot = 0;
+  p->alive = 0;
+  p->shoot_cooldown = 0;
 }

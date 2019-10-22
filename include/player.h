@@ -20,7 +20,7 @@ typedef struct Player {
 } Player;
 
 void player_init(Player *p, float x, float y);
-void player_free(Player *p);
+void player_destroy(Player *p);
 
 void player_update(Player *p, const game_input *input, const game_frame *delta);
 void player_draw(const Player *p);

@@ -15,6 +15,6 @@ rectf shape_aabb(const shape *s);
 void shape_translate(shape *s, vec2f offset);
 void shape_rotate(shape *s, float angle);
 void shape_draw(const shape *s, const SDL_Color *c);
-void shape_destory(shape *s);
+void shape_destroy(shape *s);
 
 #endif

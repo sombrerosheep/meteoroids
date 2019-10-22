@@ -38,16 +38,10 @@ game_input game_input_state(game_key_bindings *bindings) {
   return input;
 }
 
-game_key_bindings* key_bindings_get_default() {
-  game_key_bindings *bindings;
-
-  bindings = (game_key_bindings*)SDL_malloc(sizeof(game_key_bindings));
-
+void key_bindings_set_default(game_key_bindings *bindings) {
   bindings->left = SDL_SCANCODE_A;
   bindings->right = SDL_SCANCODE_D;
   bindings->thrust = SDL_SCANCODE_W;
   bindings->brake = SDL_SCANCODE_S;
   bindings->fire = SDL_SCANCODE_SPACE;
-
-  return bindings;
 }

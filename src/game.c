@@ -210,7 +210,7 @@ void seed_game_world(game_state *state) {
 void game_update(game_context *ctx, SDL_Event *event, game_frame *delta) {
   game_input input;
 
-  if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_R && ctx->state->player->alive == SDL_FALSE) {
+  if (ctx->state->player->alive == SDL_FALSE && event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_R) {
     dllist_destroy(ctx->state->meteoroids);
     player_destroy(ctx->state->player);
     seed_game_world(ctx->state);
@@ -265,14 +265,9 @@ void game_init(game_context *ctx, game_key_bindings *key_bindings) {
 
   state->player = player;
   state->meteoroids = meteoroids;
+  state->bindings = key_bindings;
 
   renderer_set(renderer);
-
-  if (key_bindings != NULL) {
-    state->bindings = key_bindings;
-  } else {
-    state->bindings = key_bindings_get_default();
-  }
 
   seed_game_world(state);
 }

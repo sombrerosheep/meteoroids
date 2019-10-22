@@ -3,8 +3,11 @@
 
 int main(int argc, char* argv) {
   game_context ctx;
+  game_key_bindings bindings;
 
-  game_init(&ctx, NULL);
+  key_bindings_set_default(&bindings);
+
+  game_init(&ctx, &bindings);
 
   game_start(&ctx);
 

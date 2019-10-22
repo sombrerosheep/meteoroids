@@ -19,7 +19,7 @@ typedef struct game_input {
   SDL_bool fire;
 } game_input;
 
-game_key_bindings* key_bindings_get_default();
+void key_bindings_set_default(game_key_bindings *bindings);
 game_input game_input_state(game_key_bindings *bindings);
 void game_input_set_key_bindings(game_key_bindings *bindings);
 

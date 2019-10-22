@@ -182,9 +182,6 @@ void player_draw(const Player *p) {
   shape_init(&global, p->sprite.points, p->sprite.num_points);
   shape_rotate(&global, p->rotation);
   shape_translate(&global, p->pos);
-  
-  rectf aabb = shape_aabb(&global);
-  render_draw_rectf(&aabb, &aabb_color);
 
   draw_bullets(p);
   shape_draw(&global, &player_color);

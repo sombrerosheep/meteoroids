@@ -2,17 +2,13 @@
 #include <game.h>
 
 int main(int argc, char* argv) {
-  struct game_context *ctx;
+  game_context ctx;
 
-  ctx = game_init(NULL);
+  game_init(&ctx, NULL);
 
-  if (ctx == NULL) {
-    exit(-1);
-  }
+  game_start(&ctx);
 
-  game_start(ctx);
-
-  game_destroy(ctx);
+  game_destroy(&ctx);
 
   return 0;
 }

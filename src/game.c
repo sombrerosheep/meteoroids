@@ -1,5 +1,4 @@
 #include <game.h>
-#include <player.h>
 
 #include <stdio.h>
 #include <SDL.h>
@@ -16,18 +15,6 @@
 #define SDL_REQUIRE_NOT_NULL(x) if ((x) == NULL) SDL_PRINT_ERROR
 
 #define NUM_STARTING_METEOROIDS 8
-
-typedef struct game_state {
-  game_key_bindings *bindings;
-  Player *player;
-  dllist *meteoroids;
-} game_state;
-
-typedef struct game_context {
-  SDL_Window *window;
-  SDL_Renderer *renderer;
-  game_state *state;
-} game_context;
 
 void keep_player_in_bounds(game_context *ctx) {
   SDL_Rect viewport;
@@ -233,10 +220,9 @@ void game_draw(game_context *ctx) {
   SDL_RenderPresent(ctx->renderer);
 }
 
-game_context* game_init(game_key_bindings *key_bindings) {
+void game_init(game_context *ctx, game_key_bindings *key_bindings) {
   SDL_Window *window;
   SDL_Renderer *renderer;
-  game_context *ctx;
   game_state *state;
   Player *player;
   dllist *meteoroids;
@@ -245,12 +231,11 @@ game_context* game_init(game_key_bindings *key_bindings) {
     SDL_version ver;
     SDL_GetVersion(&ver);
     printf("Minimum SDL Version not met.\n\tWant 2.10.0+.\n\tHave: %d.%d.%d\n", ver.major, ver.minor, ver.patch);
-    return NULL;
+    return;
   }
 
   random_init(clock());
 
-  ctx = (game_context*)SDL_malloc(sizeof(game_context));
   state = (game_state*)SDL_malloc(sizeof(game_state));
   player = (Player*)SDL_malloc(sizeof(Player));
   meteoroids = (dllist*)SDL_malloc(sizeof(dllist));
@@ -277,8 +262,6 @@ game_context* game_init(game_key_bindings *key_bindings) {
   dllist_init(meteoroids, destroy_meteoroid);
   state->meteoroids = meteoroids;
   build_game_world(state);
-
-  return ctx;
 }
 
 void game_start(game_context *ctx) {

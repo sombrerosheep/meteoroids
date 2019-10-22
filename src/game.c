@@ -15,6 +15,8 @@
 #define SDL_REQUIRE_NOT_NULL(x) if ((x) == NULL) SDL_PRINT_ERROR
 
 #define NUM_STARTING_METEOROIDS 8
+#define PLAYER_START_X 400.f
+#define PLAYER_START_Y 300.f
 
 void keep_player_in_bounds(game_context *ctx) {
   SDL_Rect viewport;
@@ -198,8 +200,21 @@ void build_game_world(game_state *state) {
   }
 }
 
-void game_update(game_context *ctx, game_frame *delta) {
+void seed_game_world(game_state *state) {
+  player_init(state->player, PLAYER_START_X, PLAYER_START_Y);
+  dllist_init(state->meteoroids, destroy_meteoroid);
+
+  build_game_world(state);
+}
+
+void game_update(game_context *ctx, SDL_Event *event, game_frame *delta) {
   game_input input;
+
+  if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_R && ctx->state->player->alive == SDL_FALSE) {
+    dllist_destroy(ctx->state->meteoroids);
+    player_destroy(ctx->state->player);
+    seed_game_world(ctx->state);
+  }
 
   input = game_input_state(ctx->state->bindings);
 
@@ -248,10 +263,10 @@ void game_init(game_context *ctx, game_key_bindings *key_bindings) {
   ctx->renderer = renderer;
   ctx->state = state;
 
-  renderer_set(renderer);
-
-  player_init(player, 400.f, 300.f);
   state->player = player;
+  state->meteoroids = meteoroids;
+
+  renderer_set(renderer);
 
   if (key_bindings != NULL) {
     state->bindings = key_bindings;
@@ -259,9 +274,7 @@ void game_init(game_context *ctx, game_key_bindings *key_bindings) {
     state->bindings = key_bindings_get_default();
   }
 
-  dllist_init(meteoroids, destroy_meteoroid);
-  state->meteoroids = meteoroids;
-  build_game_world(state);
+  seed_game_world(state);
 }
 
 void game_start(game_context *ctx) {
@@ -285,7 +298,7 @@ void game_start(game_context *ctx) {
       }
     }
 
-    game_update(ctx, &delta);
+    game_update(ctx, &event, &delta);
     game_draw(ctx);
   }
 }

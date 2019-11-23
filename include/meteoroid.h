@@ -10,16 +10,16 @@
 #define METEOROID_VELOCITY_RANGE 1.2f
 
 enum GENERATION {
-  FIRST = 0,
-  SECOND = 1,
-  THIRD = 3
+  FIRST   = 0,
+  SECOND  = 1,
+  THIRD   = 3
 };
 
 typedef struct meteoroid {
-  int         health;
-  rectf       sprite;
-  vec2f       velocity;
-  enum GENERATION  gen;
+  float             health;
+  rectf             sprite;
+  vec2f             velocity;
+  enum GENERATION   gen;
 } meteoroid;
 
 void meteoroid_init(meteoroid *m, enum GENERATION gen);

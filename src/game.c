@@ -10,10 +10,6 @@
 #include <bullet.h>
 #include <time.h>
 
-#define SDL_PRINT_ERROR printf("Error from SDL %s\n", SDL_GetError());
-#define SDL_REQUIRE_SUCCESS(x)  if ((x) != 0) SDL_PRINT_ERROR
-#define SDL_REQUIRE_NOT_NULL(x) if ((x) == NULL) SDL_PRINT_ERROR
-
 #define NUM_STARTING_METEOROIDS 8
 #define PLAYER_START_X 400.f
 #define PLAYER_START_Y 300.f
@@ -235,41 +231,50 @@ void game_draw(game_context *ctx) {
   SDL_RenderPresent(ctx->renderer);
 }
 
-void game_init(game_context *ctx, game_key_bindings *key_bindings) {
-  SDL_Window *window;
-  SDL_Renderer *renderer;
-  game_state *state;
-  Player *player;
-  dllist *meteoroids;
+int game_init_systems(game_context *ctx) {
+  if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+    printf("Error initializing SDL\n");
+    return -1;
+  }
 
+  if ((ctx->window = SDL_CreateWindow("Meteoroids", 200, 125, 800, 600, SDL_WINDOW_OPENGL)) == NULL) {
+    printf("Error creating window %s\n", SDL_GetError());
+    return -1;
+  }
+
+  if ((ctx->renderer = SDL_CreateRenderer(ctx->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)) == NULL) {
+    printf("Error creating renderer %s\n", SDL_GetError());
+    return -1;
+  }
+
+  return 0;
+}
+
+int game_init(game_context *ctx, game_key_bindings *key_bindings) {
   if (!SDL_VERSION_ATLEAST(2, 0, 10)) {
     SDL_version ver;
     SDL_GetVersion(&ver);
     printf("Minimum SDL Version not met.\n\tWant 2.10.0+.\n\tHave: %d.%d.%d\n", ver.major, ver.minor, ver.patch);
-    return;
+    return -1;
   }
 
   random_init(clock());
 
-  state = (game_state*)SDL_malloc(sizeof(game_state));
-  player = (Player*)SDL_malloc(sizeof(Player));
-  meteoroids = (dllist*)SDL_malloc(sizeof(dllist));
+  ctx->state = (game_state*)SDL_malloc(sizeof(game_state));
+  ctx->state->player = (Player*)SDL_malloc(sizeof(Player));
+  ctx->state->meteoroids = (dllist*)SDL_malloc(sizeof(dllist));
+  ctx->state->bindings = key_bindings;
 
-  SDL_REQUIRE_SUCCESS(SDL_Init(SDL_INIT_EVERYTHING));
-  SDL_REQUIRE_NOT_NULL(window = SDL_CreateWindow("Meteoroids", 200, 125, 800, 600, SDL_WINDOW_OPENGL));
-  SDL_REQUIRE_NOT_NULL(renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
+  if (game_init_systems(ctx) != 0) {
+    printf("Error detected during init...exiting");
+    return -1;
+  }
 
-  ctx->window = window;
-  ctx->renderer = renderer;
-  ctx->state = state;
+  renderer_set(ctx->renderer);
 
-  state->player = player;
-  state->meteoroids = meteoroids;
-  state->bindings = key_bindings;
+  seed_game_world(ctx->state);
 
-  renderer_set(renderer);
-
-  seed_game_world(state);
+  return 0;
 }
 
 void game_start(game_context *ctx) {

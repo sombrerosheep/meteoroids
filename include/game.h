@@ -16,7 +16,7 @@ typedef struct game_context {
   game_state *state;
 } game_context;
 
-void game_init(game_context *ctx, game_key_bindings *key_bindings);
+int game_init(game_context *ctx, game_key_bindings *key_bindings);
 void game_start(struct game_context *ctx);
 void game_destroy(struct game_context *ctx);
 

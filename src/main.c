@@ -7,7 +7,9 @@ int main(int argc, char* argv) {
 
   key_bindings_set_default(&bindings);
 
-  game_init(&ctx, &bindings);
+  if (game_init(&ctx, &bindings) != 0) {
+    exit(-1);
+  }
 
   game_start(&ctx);
 

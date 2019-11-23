@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <player.h>
 #include <renderer.h>
 #include <dllist.h>
@@ -53,7 +54,6 @@ void meteoroid_bullets_collisions(game_state *state, meteoroid *m) {
 
 void resolve_meteoroid_collisions(meteoroid *m, dllist *list) {
   for (dllist_element *e = list->head; e != NULL; e = e->next) {
-    vec2f v = m->velocity;
     meteoroid *em = e->data;
     rectf intersect = { 0.f, 0.f, 0.f, 0.f };
 
@@ -247,6 +247,11 @@ int game_init_systems(game_context *ctx) {
     return -1;
   }
 
+  if (TTF_Init() != 0) {
+    printf("Error initializing sdl_ttf: %s\n", TTF_GetError());
+    return -1;
+  }
+
   return 0;
 }
 
@@ -316,6 +321,10 @@ void game_destroy(game_context *ctx) {
   
   SDL_free(ctx->state);
   ctx->state = NULL;
+
+  if (TTF_WasInit == 1) {
+    TTF_Quit();
+  }
 
   SDL_DestroyRenderer(ctx->renderer);
   SDL_DestroyWindow(ctx->window);

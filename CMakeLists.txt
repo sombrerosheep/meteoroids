@@ -46,9 +46,11 @@ endif()
 # TODO: Use findSDL2 cmake; several options/scripts are available
 if(MSVC)
   set(SDL2_INCLUDE_DIR "$ENV{SDL_SHARED}/debug/include/")
+  set(SDL2_TTF_INCLUDE_DIR "$ENV{SDL_TTF_SHARED}/Debug/include")
   set(SDL2_LIBRARIES
     "$ENV{SDL_SHARED}/${CMAKE_BUILD_TYPE}/lib/${PROCESSOR_ARCH}/SDL2main.lib"
     "$ENV{SDL_SHARED}/${CMAKE_BUILD_TYPE}/lib/${PROCESSOR_ARCH}/SDL2.lib"
+    "$ENV{SDL_TTF_SHARED}/${CMAKE_BUILD_TYPE}/${PROCESSOR_ARCH}/SDL2_ttf.lib"
   )
 elseif(UNIX)
   set(SDL2_INCLUDE_DIR /usr/include/SDL2)
@@ -76,18 +78,20 @@ message(STATUS "  Include Dir:          ${meteoroids_include_dir}")
 message(STATUS "")
 message(STATUS "Dependency Report:")
 message(STATUS "  SDL2 Include Dir:  ${SDL2_INCLUDE_DIR}")
+message(STATUS "  SDL2 TTF Include Dir:  ${SDL2_TTF_INCLUDE_DIR}")
 message(STATUS "  SDL2 Libraries:")
 foreach(lib ${SDL2_LIBRARIES})
   message(STATUS "    ${lib}")
 endforeach()
 message(STATUS "")
 
+
 #### Build ####
 file(GLOB meteoroids_source
   "${meteoroids_source_dir}/*.c"
 )
 add_executable(meteoroids ${meteoroids_source})
-target_include_directories(meteoroids PUBLIC ${meteoroids_include_dir} ${SDL2_INCLUDE_DIR})
+target_include_directories(meteoroids PUBLIC ${meteoroids_include_dir} ${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 target_link_libraries(meteoroids ${SDL2_LIBRARIES})
 
 # Copy sdl shared lib to our build dest folder
@@ -95,4 +99,7 @@ target_link_libraries(meteoroids ${SDL2_LIBRARIES})
 # TODO: Verify Linux does not need this
 if (WIN32)
   configure_file("$ENV{SDL_SHARED}/${CMAKE_BUILD_TYPE}/lib/${PROCESSOR_ARCH}/SDL2.dll" "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/SDL2.dll" COPYONLY)
+  configure_file("$ENV{SDL_TTF_SHARED}/${CMAKE_BUILD_TYPE}/${PROCESSOR_ARCH}/libfreetype-6.dll" "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/libfreetype-6.dll" COPYONLY)
+  configure_file("$ENV{SDL_TTF_SHARED}/${CMAKE_BUILD_TYPE}/${PROCESSOR_ARCH}/SDL2_ttf.dll" "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/SDL2_ttf.dll" COPYONLY)
+  configure_file("$ENV{SDL_TTF_SHARED}/${CMAKE_BUILD_TYPE}/${PROCESSOR_ARCH}/zlib1.dll" "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/zlib1.dll" COPYONLY)
 endif(WIN32)

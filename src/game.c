@@ -324,12 +324,18 @@ int game_init(game_context *ctx, game_key_bindings *key_bindings) {
 
   random_init(clock());
 
+  if (game_init_systems(ctx) != 0) {
+    printf("Error detected during init...exiting");
+    return -1;
+  }
+
+  ctx->resources = SDL_malloc(sizeof(resources));
+  resources_init(ctx->resources);
+
   ctx->state = SDL_malloc(sizeof(game_state));
   ctx->state->player = SDL_malloc(sizeof(Player));
   ctx->state->meteoroids = SDL_malloc(sizeof(dllist));
   ctx->state->bindings = key_bindings;
-  ctx->state->proggy_title_font = SDL_malloc(sizeof(font));
-  ctx->state->proggy_sub_font = SDL_malloc(sizeof(font));
   ctx->state->title_text = SDL_malloc(sizeof(text));
   ctx->state->title_desc_text = SDL_malloc(sizeof(text));
   ctx->state->dead_text = SDL_malloc(sizeof(text));
@@ -337,29 +343,21 @@ int game_init(game_context *ctx, game_key_bindings *key_bindings) {
   ctx->state->pause_text = SDL_malloc(sizeof(text));
   ctx->state->pause_desc_text = SDL_malloc(sizeof(text));
 
-  if (game_init_systems(ctx) != 0) {
-    printf("Error detected during init...exiting");
-    return -1;
-  }
-
-  font_init(ctx->state->proggy_title_font, "./data/font/proggy/ProggyCleanSZ.ttf", 92);
-  font_init(ctx->state->proggy_sub_font, "./data/font/proggy/ProggyCleanSZ.ttf", 30);
-
-  text_init(ctx->state->title_text, ctx->state->proggy_title_font, "meteoroids");
+  text_init(ctx->state->title_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_TITLE], "meteoroids");
   text_center(ctx->state->title_text, WINDOW_HEIGHT - 100, WINDOW_WIDTH);
-  text_init(ctx->state->title_desc_text, ctx->state->proggy_sub_font, "press <enter> to play");
+  text_init(ctx->state->title_desc_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_SUB], "press <enter> to play");
   text_center_horizontal(ctx->state->title_desc_text, WINDOW_WIDTH);
   ctx->state->title_desc_text->rect.y = ctx->state->title_text->rect.y + ctx->state->title_text->rect.h + 20.f;
 
-  text_init(ctx->state->dead_text, ctx->state->proggy_title_font, "you died");
+  text_init(ctx->state->dead_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_TITLE], "you died");
   text_center(ctx->state->dead_text, WINDOW_HEIGHT - 100, WINDOW_WIDTH);
-  text_init(ctx->state->dead_desc_text, ctx->state->proggy_sub_font, "press <r> to restart");
+  text_init(ctx->state->dead_desc_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_SUB], "press <r> to restart");
   text_center_horizontal(ctx->state->dead_desc_text, WINDOW_WIDTH);
   ctx->state->dead_desc_text->rect.y = ctx->state->dead_text->rect.y + ctx->state->dead_text->rect.h + 20.f;
 
-  text_init(ctx->state->pause_text, ctx->state->proggy_title_font, "paused");
+  text_init(ctx->state->pause_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_TITLE], "paused");
   text_center(ctx->state->pause_text, WINDOW_HEIGHT - 100, WINDOW_WIDTH);
-  text_init(ctx->state->pause_desc_text, ctx->state->proggy_sub_font, "press <enter> to resume");
+  text_init(ctx->state->pause_desc_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_SUB], "press <enter> to resume");
   text_center_horizontal(ctx->state->pause_desc_text, WINDOW_WIDTH);
   ctx->state->pause_desc_text->rect.y = ctx->state->pause_text->rect.y + ctx->state->pause_text->rect.h + 20.f;
 
@@ -423,12 +421,11 @@ void game_destroy(game_context *ctx) {
   game_destroy_text(ctx->state->pause_desc_text);
   game_destroy_text(ctx->state->dead_text);
   game_destroy_text(ctx->state->dead_desc_text);
-
-  game_destroy_font(ctx->state->proggy_title_font);
-  game_destroy_font(ctx->state->proggy_sub_font);
   
   SDL_free(ctx->state);
   ctx->state = NULL;
+
+  resources_destroy(ctx->resources);
 
   if (TTF_WasInit() == 1) {
     TTF_Quit();

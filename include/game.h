@@ -3,6 +3,7 @@
 
 #include <game_input.h>
 #include <player.h>
+#include <resources.h>
 #include <text.h>
 
 typedef enum game_mode {
@@ -22,13 +23,12 @@ typedef struct game_state {
   text                  *pause_desc_text;
   text                  *dead_text;
   text                  *dead_desc_text;
-  font                  *proggy_title_font;
-  font                  *proggy_sub_font;
 } game_state;
 
 typedef struct game_context {
   SDL_Window        *window;
   SDL_Renderer      *renderer;
+  resources         *resources;
   game_state        *state;
 } game_context;
 

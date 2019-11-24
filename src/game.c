@@ -238,7 +238,7 @@ void game_update(game_context *ctx, SDL_Event *event, game_frame *delta) {
         seed_game_world(ctx->state);
       }
 
-      if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+      if (ctx->state->player->alive && event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
         ctx->state->mode = GAME_MODE_PAUSE;
       }
 

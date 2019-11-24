@@ -120,7 +120,7 @@ void player_decay_movement(Player *p, float rate, const game_frame *delta) {
 }
 
 void player_update(Player *p, const game_input *input, const game_frame *delta) {
-  vec2f movement, brake;
+  vec2f movement;
 
   if (p->alive == SDL_TRUE) {
     p->shoot_cooldown += delta->mil;

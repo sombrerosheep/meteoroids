@@ -209,31 +209,83 @@ void seed_game_world(game_state *state) {
 
 void game_update(game_context *ctx, SDL_Event *event, game_frame *delta) {
   game_input input;
-
-  if (ctx->state->player->alive == SDL_FALSE && event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_R) {
-    dllist_destroy(ctx->state->meteoroids);
-    player_destroy(ctx->state->player);
-    seed_game_world(ctx->state);
-  }
-
   input = game_input_state(ctx->state->bindings);
 
-  player_update(ctx->state->player, &input, delta);
-  update_meteoroids(ctx->state, delta);
-  update_player_collisions(ctx->state->player, ctx->state->meteoroids);
+  switch (ctx->state->mode) {
+    case GAME_MODE_MENU: {
+      if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_RETURN) {
+        dllist_destroy(ctx->state->meteoroids);
+        player_destroy(ctx->state->player);
+        seed_game_world(ctx->state);
+        ctx->state->mode = GAME_MODE_PLAY;
+      }
 
-  keep_player_in_bounds(ctx);
+      update_meteoroids(ctx->state, delta);
+
+      break;
+    }
+    case GAME_MODE_PAUSE: {
+      if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_RETURN) {
+        ctx->state->mode = GAME_MODE_PLAY;
+      }
+
+      break;
+    }
+    case GAME_MODE_PLAY: {
+      if (ctx->state->player->alive == SDL_FALSE && event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_R) {
+        dllist_destroy(ctx->state->meteoroids);
+        player_destroy(ctx->state->player);
+        seed_game_world(ctx->state);
+      }
+
+      if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+        ctx->state->mode = GAME_MODE_PAUSE;
+      }
+
+      player_update(ctx->state->player, &input, delta);
+      update_meteoroids(ctx->state, delta);
+      update_player_collisions(ctx->state->player, ctx->state->meteoroids);
+
+      keep_player_in_bounds(ctx);
+
+      break;
+    }
+  }
+
+  return;
 }
 
 void game_draw(game_context *ctx) {
   SDL_SetRenderDrawColor(ctx->renderer, 0x0, 0x0, 0x0, 0xFF);
   SDL_RenderClear(ctx->renderer);
+  SDL_Color tex_col = { 0xA0, 0x20, 0x80, 0x80};
 
-  SDL_Color tex_col = { 0xA0, 0x20, 0x80, 0x40};
-  render_fill_text(ctx->state->title_text, &tex_col);
+  switch (ctx->state->mode) {
+    case GAME_MODE_MENU: {
+      render_fill_text(ctx->state->title_text, &tex_col);
+      render_fill_text(ctx->state->title_desc_text, &tex_col);
+      draw_meteoroids(ctx->state->meteoroids);
 
-  player_draw(ctx->state->player);
-  draw_meteoroids(ctx->state->meteoroids);
+      break;
+    }
+    case GAME_MODE_PAUSE: {
+      render_fill_text(ctx->state->pause_text, &tex_col);
+      render_fill_text(ctx->state->pause_desc_text, &tex_col);
+
+      break;
+    }
+    case GAME_MODE_PLAY: {
+      if (!ctx->state->player->alive) {
+        render_fill_text(ctx->state->dead_text, &tex_col);
+        render_fill_text(ctx->state->dead_desc_text, &tex_col);
+      }
+
+      player_draw(ctx->state->player);
+      draw_meteoroids(ctx->state->meteoroids);
+
+      break;
+    }
+  }
 
   SDL_RenderPresent(ctx->renderer);
 }
@@ -276,21 +328,42 @@ int game_init(game_context *ctx, game_key_bindings *key_bindings) {
   ctx->state->player = SDL_malloc(sizeof(Player));
   ctx->state->meteoroids = SDL_malloc(sizeof(dllist));
   ctx->state->bindings = key_bindings;
-  ctx->state->proggy_font = SDL_malloc(sizeof(font));
+  ctx->state->proggy_title_font = SDL_malloc(sizeof(font));
+  ctx->state->proggy_sub_font = SDL_malloc(sizeof(font));
   ctx->state->title_text = SDL_malloc(sizeof(text));
+  ctx->state->title_desc_text = SDL_malloc(sizeof(text));
+  ctx->state->dead_text = SDL_malloc(sizeof(text));
+  ctx->state->dead_desc_text = SDL_malloc(sizeof(text));
+  ctx->state->pause_text = SDL_malloc(sizeof(text));
+  ctx->state->pause_desc_text = SDL_malloc(sizeof(text));
 
   if (game_init_systems(ctx) != 0) {
     printf("Error detected during init...exiting");
     return -1;
   }
 
-  font_init(
-    ctx->state->proggy_font,
-    "./data/font/ProggyCleanSZ.ttf",
-    127
-  );
-  text_init(ctx->state->title_text, ctx->state->proggy_font, "meteoroids");
-  text_center(ctx->state->title_text, WINDOW_HEIGHT, WINDOW_WIDTH);
+  font_init(ctx->state->proggy_title_font, "./data/font/proggy/ProggyCleanSZ.ttf", 92);
+  font_init(ctx->state->proggy_sub_font, "./data/font/proggy/ProggyCleanSZ.ttf", 30);
+
+  text_init(ctx->state->title_text, ctx->state->proggy_title_font, "meteoroids");
+  text_center(ctx->state->title_text, WINDOW_HEIGHT - 100, WINDOW_WIDTH);
+  text_init(ctx->state->title_desc_text, ctx->state->proggy_sub_font, "press <enter> to play");
+  text_center_horizontal(ctx->state->title_desc_text, WINDOW_WIDTH);
+  ctx->state->title_desc_text->rect.y = ctx->state->title_text->rect.y + ctx->state->title_text->rect.h + 20.f;
+
+  text_init(ctx->state->dead_text, ctx->state->proggy_title_font, "you died");
+  text_center(ctx->state->dead_text, WINDOW_HEIGHT - 100, WINDOW_WIDTH);
+  text_init(ctx->state->dead_desc_text, ctx->state->proggy_sub_font, "press <r> to restart");
+  text_center_horizontal(ctx->state->dead_desc_text, WINDOW_WIDTH);
+  ctx->state->dead_desc_text->rect.y = ctx->state->dead_text->rect.y + ctx->state->dead_text->rect.h + 20.f;
+
+  text_init(ctx->state->pause_text, ctx->state->proggy_title_font, "paused");
+  text_center(ctx->state->pause_text, WINDOW_HEIGHT - 100, WINDOW_WIDTH);
+  text_init(ctx->state->pause_desc_text, ctx->state->proggy_sub_font, "press <enter> to resume");
+  text_center_horizontal(ctx->state->pause_desc_text, WINDOW_WIDTH);
+  ctx->state->pause_desc_text->rect.y = ctx->state->pause_text->rect.y + ctx->state->pause_text->rect.h + 20.f;
+
+  ctx->state->mode = GAME_MODE_MENU;
 
   renderer_set(ctx->renderer);
 
@@ -314,15 +387,23 @@ void game_start(game_context *ctx) {
       if (event.type == SDL_QUIT) {
         running = SDL_FALSE;
       }
-
-      if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-        running = SDL_FALSE;
-      }
     }
 
     game_update(ctx, &event, &delta);
     game_draw(ctx);
   }
+}
+
+void game_destroy_font(font *f) {
+  font_destroy(f);
+  SDL_free(f);
+  f = NULL;
+}
+
+void game_destroy_text(text *t) {
+  text_destroy(t);
+  SDL_free(t);
+  t = NULL;
 }
 
 void game_destroy(game_context *ctx) {
@@ -336,18 +417,20 @@ void game_destroy(game_context *ctx) {
   SDL_free(ctx->state->meteoroids);
   ctx->state->player = NULL;
 
-  text_destroy(ctx->state->title_text);
-  SDL_free(ctx->state->title_text);
-  ctx->state->title_text = NULL;
-  
-  font_destroy(ctx->state->proggy_font);
-  SDL_free(ctx->state->proggy_font);
-  ctx->state->proggy_font = NULL;
+  game_destroy_text(ctx->state->title_text);
+  game_destroy_text(ctx->state->title_desc_text);
+  game_destroy_text(ctx->state->pause_text);
+  game_destroy_text(ctx->state->pause_desc_text);
+  game_destroy_text(ctx->state->dead_text);
+  game_destroy_text(ctx->state->dead_desc_text);
+
+  game_destroy_font(ctx->state->proggy_title_font);
+  game_destroy_font(ctx->state->proggy_sub_font);
   
   SDL_free(ctx->state);
   ctx->state = NULL;
 
-  if (TTF_WasInit == 1) {
+  if (TTF_WasInit() == 1) {
     TTF_Quit();
   }
 

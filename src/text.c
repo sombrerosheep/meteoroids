@@ -16,7 +16,7 @@ void font_destroy(font *f) {
 }
 
 void text_init(text *t, font *f, const char *message) {
-  int w, h;
+  int w, h = 0;
 
   t->font = f;
 
@@ -31,6 +31,9 @@ void text_init(text *t, font *f, const char *message) {
   t->rect.w = w;
   t->rect.x = 0.f;
   t->rect.y = 0.f;
+
+  SDL_assert(t->rect.w > 0);
+  SDL_assert(t->rect.h > 0);
 }
 
 void text_destroy(text *t) {

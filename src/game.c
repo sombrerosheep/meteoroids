@@ -10,6 +10,10 @@
 #include <game_clock.h>
 #include <bullet.h>
 #include <time.h>
+#include <text.h>
+
+#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 800
 
 #define NUM_STARTING_METEOROIDS 8
 #define PLAYER_START_X 400.f
@@ -225,6 +229,9 @@ void game_draw(game_context *ctx) {
   SDL_SetRenderDrawColor(ctx->renderer, 0x0, 0x0, 0x0, 0xFF);
   SDL_RenderClear(ctx->renderer);
 
+  SDL_Color tex_col = { 0xA0, 0x20, 0x80, 0x40};
+  render_fill_text(ctx->state->title_text, &tex_col);
+
   player_draw(ctx->state->player);
   draw_meteoroids(ctx->state->meteoroids);
 
@@ -237,7 +244,7 @@ int game_init_systems(game_context *ctx) {
     return -1;
   }
 
-  if ((ctx->window = SDL_CreateWindow("Meteoroids", 200, 125, 800, 600, SDL_WINDOW_OPENGL)) == NULL) {
+  if ((ctx->window = SDL_CreateWindow("Meteoroids", 200, 125, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL)) == NULL) {
     printf("Error creating window %s\n", SDL_GetError());
     return -1;
   }
@@ -265,15 +272,25 @@ int game_init(game_context *ctx, game_key_bindings *key_bindings) {
 
   random_init(clock());
 
-  ctx->state = (game_state*)SDL_malloc(sizeof(game_state));
-  ctx->state->player = (Player*)SDL_malloc(sizeof(Player));
-  ctx->state->meteoroids = (dllist*)SDL_malloc(sizeof(dllist));
+  ctx->state = SDL_malloc(sizeof(game_state));
+  ctx->state->player = SDL_malloc(sizeof(Player));
+  ctx->state->meteoroids = SDL_malloc(sizeof(dllist));
   ctx->state->bindings = key_bindings;
+  ctx->state->proggy_font = SDL_malloc(sizeof(font));
+  ctx->state->title_text = SDL_malloc(sizeof(text));
 
   if (game_init_systems(ctx) != 0) {
     printf("Error detected during init...exiting");
     return -1;
   }
+
+  font_init(
+    ctx->state->proggy_font,
+    "./data/font/ProggyCleanSZ.ttf",
+    127
+  );
+  text_init(ctx->state->title_text, ctx->state->proggy_font, "meteoroids");
+  text_center(ctx->state->title_text, WINDOW_HEIGHT, WINDOW_WIDTH);
 
   renderer_set(ctx->renderer);
 
@@ -318,6 +335,14 @@ void game_destroy(game_context *ctx) {
   dllist_destroy(ctx->state->meteoroids);
   SDL_free(ctx->state->meteoroids);
   ctx->state->player = NULL;
+
+  text_destroy(ctx->state->title_text);
+  SDL_free(ctx->state->title_text);
+  ctx->state->title_text = NULL;
+  
+  font_destroy(ctx->state->proggy_font);
+  SDL_free(ctx->state->proggy_font);
+  ctx->state->proggy_font = NULL;
   
   SDL_free(ctx->state);
   ctx->state = NULL;

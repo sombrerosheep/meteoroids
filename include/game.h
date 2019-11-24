@@ -3,11 +3,14 @@
 
 #include <game_input.h>
 #include <player.h>
+#include <text.h>
 
 typedef struct game_state {
   game_key_bindings *bindings;
   Player *player;
   dllist *meteoroids;
+  text *title_text;
+  font *proggy_font;
 } game_state;
 
 typedef struct game_context {

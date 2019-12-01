@@ -214,10 +214,15 @@ void game_update(game_context *ctx, SDL_Event *event, game_frame *delta) {
   switch (ctx->state->mode) {
     case GAME_MODE_MENU: {
       if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_RETURN) {
-        dllist_destroy(ctx->state->meteoroids);
-        player_destroy(ctx->state->player);
-        seed_game_world(ctx->state);
-        ctx->state->mode = GAME_MODE_PLAY;
+        if (ctx->state->main_menu->selected == 0) {
+          dllist_destroy(ctx->state->meteoroids);
+          player_destroy(ctx->state->player);
+          seed_game_world(ctx->state);
+          ctx->state->mode = GAME_MODE_PLAY;
+        }
+        if (ctx->state->main_menu->selected == 1) {
+          ctx->running = 0;
+        }
       }
 
       main_menu_update(ctx->state->main_menu, event, delta);
@@ -357,6 +362,8 @@ int game_init(game_context *ctx, game_key_bindings *key_bindings) {
 
   seed_game_world(ctx->state);
 
+  ctx->running = 1;
+
   return 0;
 }
 
@@ -367,13 +374,12 @@ void game_start(game_context *ctx) {
   game_frame delta;
 
   game_clock_init(&clock);
-  running = SDL_TRUE;
 
-  while (running) {
+  while (ctx->running) {
     delta = game_clock_reset(&clock);
     if (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
-        running = SDL_FALSE;
+        ctx->running = 0;
       }
     }
 

@@ -71,13 +71,12 @@ void render_draw_lines(const vec2f *points, int num_points, const SDL_Color *col
 }
 
 void render_fill_text(text *t, const SDL_Color *color) {
-  // assume that each text has a single texture and we'll never update it
-  if (t->texture == NULL) {
-    SDL_Surface *surface = TTF_RenderText_Solid(t->font->ttffont, t->message, *color);
-    t->texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-  }
+  SDL_Surface *surface = TTF_RenderText_Solid(t->font->ttffont, t->message, *color);
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+  SDL_FreeSurface(surface);
 
   SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
-  SDL_RenderCopyF(renderer, t->texture, NULL, &t->rect);
+  SDL_RenderCopyF(renderer, texture, NULL, &t->rect);
+
+  SDL_DestroyTexture(texture);
 }

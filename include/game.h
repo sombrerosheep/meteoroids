@@ -25,6 +25,7 @@ typedef struct game_state {
 } game_state;
 
 typedef struct game_context {
+  int               running;
   SDL_Window        *window;
   SDL_Renderer      *renderer;
   resources         *resources;

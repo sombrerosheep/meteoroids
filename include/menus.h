@@ -7,7 +7,8 @@
 
 typedef struct main_menu {
   text title;
-  text sub_text;
+  text *options;
+  int selected;
 } main_menu;
 
 typedef struct pause_menu {

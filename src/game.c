@@ -232,7 +232,27 @@ void game_update(game_context *ctx, SDL_Event *event, game_frame *delta) {
     }
     case GAME_MODE_PAUSE: {
       if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_RETURN) {
-        ctx->state->mode = GAME_MODE_PLAY;
+        if (ctx->state->pause_menu->selected == PMO_RESUME) {
+          ctx->state->mode = GAME_MODE_PLAY;
+        }
+
+        if (ctx->state->pause_menu->selected == PMO_MENU) {
+          /* 
+            There's a key-repeat oddity happening here. I'm getting
+            multiple key down/up when I should only be getting a single
+            event. This was the case for the menu update items having
+            to store a static variables for key hits.
+
+            Leaving this functionality in, knowing that its currently
+            slightly broken. There's a bug filed and set to be addressed
+            "post 2.0.10". Until then...
+          */
+          ctx->state->mode = GAME_MODE_MENU;
+        }
+
+        if (ctx->state->pause_menu->selected == PMO_QUIT) {
+          ctx->running = 0;
+        }
       }
 
       pause_menu_update(ctx->state->pause_menu, event, delta);
@@ -369,7 +389,6 @@ int game_init(game_context *ctx, game_key_bindings *key_bindings) {
 
 void game_start(game_context *ctx) {
   SDL_Event event;
-  SDL_bool running;
   game_clock clock;
   game_frame delta;
 

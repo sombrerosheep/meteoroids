@@ -5,6 +5,7 @@
 #include <player.h>
 #include <resources.h>
 #include <text.h>
+#include <menus.h>
 
 typedef enum game_mode {
   GAME_MODE_MENU,
@@ -17,10 +18,8 @@ typedef struct game_state {
   Player                *player;
   dllist                *meteoroids;
   game_mode             mode;
-  text                  *title_text;
-  text                  *title_desc_text;
-  text                  *pause_text;
-  text                  *pause_desc_text;
+  main_menu             *main_menu;
+  pause_menu            *pause_menu;
   text                  *dead_text;
   text                  *dead_desc_text;
 } game_state;

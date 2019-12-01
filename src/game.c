@@ -220,6 +220,7 @@ void game_update(game_context *ctx, SDL_Event *event, game_frame *delta) {
         ctx->state->mode = GAME_MODE_PLAY;
       }
 
+      main_menu_update(ctx->state->main_menu, event, delta);
       update_meteoroids(ctx->state, delta);
 
       break;
@@ -228,6 +229,8 @@ void game_update(game_context *ctx, SDL_Event *event, game_frame *delta) {
       if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_RETURN) {
         ctx->state->mode = GAME_MODE_PLAY;
       }
+
+      pause_menu_update(ctx->state->pause_menu, event, delta);
 
       break;
     }
@@ -262,15 +265,13 @@ void game_draw(game_context *ctx) {
 
   switch (ctx->state->mode) {
     case GAME_MODE_MENU: {
-      render_fill_text(ctx->state->title_text, &tex_col);
-      render_fill_text(ctx->state->title_desc_text, &tex_col);
+      main_menu_draw(ctx->state->main_menu);
       draw_meteoroids(ctx->state->meteoroids);
 
       break;
     }
     case GAME_MODE_PAUSE: {
-      render_fill_text(ctx->state->pause_text, &tex_col);
-      render_fill_text(ctx->state->pause_desc_text, &tex_col);
+      pause_menu_draw(ctx->state->pause_menu);
 
       break;
     }
@@ -336,18 +337,10 @@ int game_init(game_context *ctx, game_key_bindings *key_bindings) {
   ctx->state->player = SDL_malloc(sizeof(Player));
   ctx->state->meteoroids = SDL_malloc(sizeof(dllist));
   ctx->state->bindings = key_bindings;
-  ctx->state->title_text = SDL_malloc(sizeof(text));
-  ctx->state->title_desc_text = SDL_malloc(sizeof(text));
   ctx->state->dead_text = SDL_malloc(sizeof(text));
   ctx->state->dead_desc_text = SDL_malloc(sizeof(text));
-  ctx->state->pause_text = SDL_malloc(sizeof(text));
-  ctx->state->pause_desc_text = SDL_malloc(sizeof(text));
-
-  text_init(ctx->state->title_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_TITLE], "meteoroids");
-  text_center(ctx->state->title_text, WINDOW_HEIGHT - 100, WINDOW_WIDTH);
-  text_init(ctx->state->title_desc_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_SUB], "press <enter> to play");
-  text_center_horizontal(ctx->state->title_desc_text, WINDOW_WIDTH);
-  ctx->state->title_desc_text->rect.y = ctx->state->title_text->rect.y + ctx->state->title_text->rect.h + 20.f;
+  ctx->state->main_menu = SDL_malloc(sizeof(main_menu));
+  ctx->state->pause_menu = SDL_malloc(sizeof(pause_menu));
 
   text_init(ctx->state->dead_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_TITLE], "you died");
   text_center(ctx->state->dead_text, WINDOW_HEIGHT - 100, WINDOW_WIDTH);
@@ -355,11 +348,8 @@ int game_init(game_context *ctx, game_key_bindings *key_bindings) {
   text_center_horizontal(ctx->state->dead_desc_text, WINDOW_WIDTH);
   ctx->state->dead_desc_text->rect.y = ctx->state->dead_text->rect.y + ctx->state->dead_text->rect.h + 20.f;
 
-  text_init(ctx->state->pause_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_TITLE], "paused");
-  text_center(ctx->state->pause_text, WINDOW_HEIGHT - 100, WINDOW_WIDTH);
-  text_init(ctx->state->pause_desc_text, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_SUB], "press <enter> to resume");
-  text_center_horizontal(ctx->state->pause_desc_text, WINDOW_WIDTH);
-  ctx->state->pause_desc_text->rect.y = ctx->state->pause_text->rect.y + ctx->state->pause_text->rect.h + 20.f;
+  main_menu_init(ctx->state->main_menu, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_TITLE], &ctx->resources->fonts[FONT_RESOURCE_PROGGY_SUB]);
+  pause_menu_init(ctx->state->pause_menu, &ctx->resources->fonts[FONT_RESOURCE_PROGGY_TITLE], &ctx->resources->fonts[FONT_RESOURCE_PROGGY_SUB]);
 
   ctx->state->mode = GAME_MODE_MENU;
 
@@ -415,10 +405,8 @@ void game_destroy(game_context *ctx) {
   SDL_free(ctx->state->meteoroids);
   ctx->state->player = NULL;
 
-  game_destroy_text(ctx->state->title_text);
-  game_destroy_text(ctx->state->title_desc_text);
-  game_destroy_text(ctx->state->pause_text);
-  game_destroy_text(ctx->state->pause_desc_text);
+  main_menu_draw(ctx->state->main_menu);
+  pause_menu_draw(ctx->state->pause_menu);
   game_destroy_text(ctx->state->dead_text);
   game_destroy_text(ctx->state->dead_desc_text);
   

@@ -6,6 +6,7 @@
 #include <resources.h>
 #include <text.h>
 #include <menus.h>
+#include <dllist.h>
 
 typedef enum game_mode {
   GAME_MODE_MENU,

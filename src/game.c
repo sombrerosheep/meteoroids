@@ -6,6 +6,7 @@
 #include <player.h>
 #include <renderer.h>
 #include <dllist.h>
+#include <darray.h>
 #include <meteoroid.h>
 #include <game_clock.h>
 #include <bullet.h>
@@ -42,13 +43,13 @@ void destroy_meteoroid(void *data) {
 }
 
 void meteoroid_bullets_collisions(game_state *state, meteoroid *m) {
-  dllist *bullets = &state->player->bullets;
-  dllist_element *e;
+  if (darray_size(state->player->bullets) < 1) {
+    return;
+  }
 
-  for (e = bullets->head; e != NULL; e = e->next) {
-    bullet *b;
+  for (unsigned int i = 0; i < darray_size(state->player->bullets); i++) {
+    bullet *b = (bullet*)darray_get(state->player->bullets, i);
     
-    b = (bullet*)e->data;
     if (rectf_intersects_rectf(&b->sprite, &m->sprite) == SDL_TRUE) {
       m->health -= b->health;
       b->health = 0;
@@ -74,7 +75,7 @@ void resolve_meteoroid_collisions(meteoroid *m, dllist *list) {
           // collision was on right
           m->sprite.x -= intersect.w;
         } else {
-          // collision was on left
+         // collision was on left
           m->sprite.x += intersect.w;
         }
       } else {

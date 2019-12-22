@@ -5,7 +5,7 @@
 #define BULLET_SIZE 3.f
 #define BULLET_SPEED 125.f
 #define BULLET_INIT_HEALTH 20.f
-#define BULLET_DEGREDATION_RATE (BULLET_INIT_HEALTH) / 3;
+#define BULLET_DEGREDATION_RATE ((BULLET_INIT_HEALTH) / 3.f)
 
 const SDL_Color bullet_color = { 0xFF, 0x0, 0x0, 0xFF };
 

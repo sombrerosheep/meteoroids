@@ -22,19 +22,9 @@ static SDL_Color player_alive_color = { 0x0, 0xF0, 0x0, 0xFF };
 static SDL_Color player_dead_color = { 0xF0, 0x11, 0x11, 0xFF };
 static SDL_Color aabb_color = { 0xF0, 0x00, 0x0, 0xFF };
 
-void destroy_bullet(void *data) {
-  bullet *b;
-
-  b = (bullet*)data;
-
-  SDL_free(b);
-}
-
 void player_shoot(Player *p) {
   float x, y, v_x, v_y;
-  bullet *b;
-
-  b = SDL_malloc(sizeof(bullet));
+  bullet b;
 
   v_x = maths_cosf(p->rotation);
   v_y = maths_sinf(p->rotation);
@@ -42,9 +32,9 @@ void player_shoot(Player *p) {
   x = v_x + p->pos.x;
   y = v_y + p->pos.y;
 
-  bullet_init(b, x, y, v_x, v_y);
+  bullet_init(&b, x, y, v_x, v_y);
   
-  dllist_ins(&p->bullets, b);
+  darray_insert(p->bullets, &b);
   p->can_shoot = SDL_FALSE;
   p->shoot_cooldown = 0;
 
@@ -52,34 +42,31 @@ void player_shoot(Player *p) {
 }
 
 void update_bullets(Player *p, const game_frame *delta) {
-  dllist_element *e;
-  bullet *b;
   SDL_Rect viewport;
+
+  if (darray_size(p->bullets) < 1) {
+    return;
+  }
 
   renderer_get_viewport(&viewport);
 
-  for (e = p->bullets.head; e != NULL;) {
-    b = (bullet*)e->data;
+  for (unsigned int i = 0; i < darray_size(p->bullets);) {
+    bullet *b = (bullet*)darray_get(p->bullets, i);
     bullet_update(b, delta);
     keep_in_bounds(&b->sprite, &viewport);
 
     // clean up "dead" bullets
-    if (((bullet*)e->data)->health < 0.f) {
-      dllist_element *prev = e->prev; // needed to correct iterator
-      dllist_rem(&p->bullets, (void**)&b);
-      destroy_bullet(b);
-      e = prev; // correct iterator
+    if (b->health < 0.f) {
+      darray_remove(p->bullets, i);
     } else {
-      e = e->next;
+      i++;
     }
   }
 }
 
 void draw_bullets(const Player *p) {
-  dllist_element *e;
-
-  for (e = p->bullets.head; e != NULL; e = e->next) {
-    bullet_draw((bullet*)e->data);
+  for (unsigned int i = 0; i < darray_size(p->bullets); i++) {
+    bullet_draw((bullet*)darray_get(p->bullets, i));
   }
 }
 
@@ -208,14 +195,16 @@ void player_init(Player *p, float x, float y) {
 
   p->pos = (vec2f){ x, y };  
 
-  dllist_init(&p->bullets, destroy_bullet);
+  p->bullets = darray_create(10, sizeof(bullet));
+
+  return;
 }
 
 void player_destroy(Player *p) {
   p->velocity = (vec2f){ 0.f, 0.f };
   p->pos = (vec2f){ 0.f, 0.f };
   shape_destroy(&p->sprite);
-  dllist_destroy(&p->bullets);
+  darray_destroy(p->bullets);
   p->rotation = 0.f;
   p->can_shoot = 0;
   p->alive = 0;
